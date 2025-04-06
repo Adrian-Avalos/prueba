@@ -1,1 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detector de Comida con IA</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.14.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+</head>
+<body>
+  <h1>Detector de Comida 🍕 con IA</h1>
+  <input type="file" accept="image/*" onchange="loadImage(event)">
+  <div class="preview">
+    <img id="preview" src="" alt="Imagen de comida" />
+  </div>
+  <button onclick="predict()">Detectar alimentos</button>
+  <div id="result"></div>
 
+  <script src="script.js"></script>
+</body>
+</html>
