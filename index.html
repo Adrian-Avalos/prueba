@@ -314,8 +314,29 @@
         calcularTotales(); // Actualiza el total general
       }
 
+      
+        // Total del grupo
+        const totalCal = alimentosSeleccionados[tipo].reduce((sum, a) => sum + convertirANumero(a.valor_energetico) * a.factor, 0);
+        y += 10;
+        doc.setFontSize(12);
+        doc.text(`Subtotal: ${totalCal.toFixed(1)} calorías`, 10, y);
+      
+        doc.save(`${tipo}_nutricion.pdf`);
+      };
+    
 
-      window.exportarGrupoAPDF = function (tipo) {
+    function calcularTotales() {
+      const t = { calorias: 0, hc: 0, proteinas: 0, grasas: 0 };
+            Object.values(alimentosSeleccionados).forEach(lista => {
+        lista.forEach(a => {
+          t.calorias += convertirANumero(a.valor_energetico) * a.factor;
+          t.hc += convertirANumero(a.carbohidratos_disponibles) * a.factor;
+          t.proteinas += convertirANumero(a.proteinas) * a.factor;
+          t.grasas += convertirANumero(a.lipidos_totales) * a.factor;
+        });
+      });
+
+     window.exportarGrupoAPDF = function (tipo) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         let y = 10;
@@ -346,32 +367,43 @@
             y = 10;
           }
         });
-      
-        // Total del grupo
-        const totalCal = alimentosSeleccionados[tipo].reduce((sum, a) => sum + convertirANumero(a.valor_energetico) * a.factor, 0);
-        y += 10;
-        doc.setFontSize(12);
-        doc.text(`Subtotal: ${totalCal.toFixed(1)} calorías`, 10, y);
-      
-        doc.save(`${tipo}_nutricion.pdf`);
-      };
-    
-
-    function calcularTotales() {
-      const t = { calorias: 0, hc: 0, proteinas: 0, grasas: 0 };
-            Object.values(alimentosSeleccionados).forEach(lista => {
-        lista.forEach(a => {
-          t.calorias += convertirANumero(a.valor_energetico) * a.factor;
-          t.hc += convertirANumero(a.carbohidratos_disponibles) * a.factor;
-          t.proteinas += convertirANumero(a.proteinas) * a.factor;
-          t.grasas += convertirANumero(a.lipidos_totales) * a.factor;
-        });
-      });
 
       document.getElementById('totales').textContent =
         `Totales: ${t.calorias.toFixed(1)} cal | ${t.hc.toFixed(1)}g HC | ${t.proteinas.toFixed(1)}g Prot | ${t.grasas.toFixed(1)}g Grasas`;
       actualizarGrafico(t);
     }
+
+     window.exportarGrupoAPDF = function (tipo) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 10;
+      
+        doc.setFontSize(14);
+        doc.text(`Listado de alimentos – ${tipo.toUpperCase()}`, 10, y);
+        y += 10;
+      
+        const headers = ["Alimento", "Cantidad (g)", "Calorías", "HC", "Proteínas", "Grasas"];
+        doc.setFontSize(10);
+        doc.text(headers.join(" | "), 10, y);
+        y += 7;
+      
+        alimentosSeleccionados[tipo].forEach(a => {
+          const nombre = a.alimento.length > 30 ? a.alimento.slice(0, 30) + "..." : a.alimento;
+          const linea = [
+            nombre,
+            a.cantidad,
+            (convertirANumero(a.valor_energetico) * a.factor).toFixed(1),
+            (convertirANumero(a.carbohidratos_disponibles) * a.factor).toFixed(1),
+            (convertirANumero(a.proteinas) * a.factor).toFixed(1),
+            (convertirANumero(a.lipidos_totales) * a.factor).toFixed(1)
+          ].join(" | ");
+          doc.text(linea, 10, y);
+          y += 7;
+          if (y > 270) {
+            doc.addPage();
+            y = 10;
+          }
+        });
 
       window.eliminarAlimento = function (tipo, index) {
         alimentosSeleccionados[tipo].splice(index, 1);
