@@ -279,24 +279,27 @@
       });
     }
 
-    window.mostrarDatosAlimento = async function () {
-      const id = document.getElementById('alimento-select').value;
-      const contenedor = document.getElementById('detalle-alimento');
-      contenedor.innerHTML = '';
-      if (!id) return;
-
-      const { data, error } = await client.from('alimentos_detallados').select('*').eq('id', id).single();
-      if (error) return console.error(error);
-      window.alimentoActual = data;
-
-      for (const [clave, valor] of Object.entries(data)) {
-        if (clave === 'id') continue;
-        const col = document.createElement('div');
-        col.className = 'col-md-3';
-        col.innerHTML = `<label class="form-label">${clave.replace(/_/g, ' ').toUpperCase()}</label><input class="form-control" value="${valor}" disabled>`;
-        contenedor.appendChild(col);
-      }
-    };
+         window.mostrarDatosAlimento = async function () {
+          const id = document.getElementById('alimento-select').value;
+          const contenedor = document.getElementById('detalle-alimento');
+          contenedor.classList.remove('activo'); // Ocultamos para reiniciar animación
+          contenedor.innerHTML = '';
+          if (!id) return;
+        
+          const { data, error } = await client.from('alimentos_detallados').select('*').eq('id', id).single();
+          if (error) return console.error(error);
+          window.alimentoActual = data;
+        
+          for (const [clave, valor] of Object.entries(data)) {
+            if (clave === 'id') continue;
+            const col = document.createElement('div');
+            col.className = 'col-md-3';
+            col.innerHTML = `<label class="form-label">${clave.replace(/_/g, ' ').toUpperCase()}</label><input class="form-control" value="${valor}" disabled>`;
+            contenedor.appendChild(col);
+          }
+        
+          contenedor.classList.add('activo'); // Mostramos al final
+        };
 
        window.agregarAlimento = function () {
       const tipo = document.getElementById('tipo-comida').value;
