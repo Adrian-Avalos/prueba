@@ -47,6 +47,20 @@
       max-height: 1000px;
       transition: max-height 0.8s ease;
     }
+        .table td:nth-child(2), .table th:nth-child(2) {
+      max-width: 200px; /* Ajustá según te convenga */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+        .table td:nth-child(2):hover {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+      background-color: #222; /* para resaltar el hover */
+      z-index: 10;
+      position: relative;
+    }
   </style>
 </head>
 <body>
