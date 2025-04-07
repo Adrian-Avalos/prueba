@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Calculadora VTC Nutricional</title>
+  <title>VTC por Peso Corporal</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -13,18 +13,18 @@
       padding: 20px;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
     .container {
-      max-width: 400px;
+      max-width: 450px;
       margin: 0 auto;
       background-color: #1e1e1e;
       border-radius: 12px;
       padding: 20px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.4);
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
     }
 
     label {
@@ -33,7 +33,7 @@
       font-weight: 600;
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
@@ -45,49 +45,54 @@
     }
 
     .resultado {
-      margin-top: 20px;
+      margin-top: 25px;
       padding: 15px;
-      background: #007bff;
+      background: #00bfa5;
       border-radius: 8px;
-      color: white;
       text-align: center;
-      font-size: 18px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
     }
   </style>
 </head>
 <body>
-  <h1>Calculadora VTC Nutricional</h1>
+
   <div class="container">
-    <label for="proteinas">Proteínas (g)</label>
-    <input type="number" id="proteinas" value="0" />
+    <h1>Calculadora VTC</h1>
 
-    <label for="carbohidratos">Carbohidratos (g)</label>
-    <input type="number" id="carbohidratos" value="0" />
+    <label for="peso">Peso del paciente (kg)</label>
+    <input type="number" id="peso" value="70" />
 
-    <label for="grasas">Grasas (g)</label>
-    <input type="number" id="grasas" value="0" />
+    <label for="factor">Requerimiento energético (kcal/kg)</label>
+    <select id="factor">
+      <option value="20">20 kcal/kg (Reposo / pérdida de peso)</option>
+      <option value="25">25 kcal/kg (Moderado)</option>
+      <option value="30" selected>30 kcal/kg (Mantenimiento)</option>
+      <option value="35">35 kcal/kg (Actividad alta / aumento)</option>
+    </select>
 
-    <div class="resultado" id="vtc">Total: 0 kcal</div>
+    <div class="resultado" id="vtc">VTC Total: 0 kcal</div>
   </div>
 
   <script>
-    const proteinas = document.getElementById('proteinas');
-    const carbohidratos = document.getElementById('carbohidratos');
-    const grasas = document.getElementById('grasas');
+    const peso = document.getElementById('peso');
+    const factor = document.getElementById('factor');
     const resultado = document.getElementById('vtc');
 
     function calcularVTC() {
-      const p = parseFloat(proteinas.value) || 0;
-      const c = parseFloat(carbohidratos.value) || 0;
-      const g = parseFloat(grasas.value) || 0;
-
-      const total = (p * 4) + (c * 4) + (g * 9);
-      resultado.textContent = `Total: ${total.toFixed(2)} kcal`;
+      const p = parseFloat(peso.value) || 0;
+      const f = parseFloat(factor.value) || 30;
+      const total = p * f;
+      resultado.textContent = `VTC Total: ${total.toFixed(0)} kcal`;
     }
 
-    proteinas.addEventListener('input', calcularVTC);
-    carbohidratos.addEventListener('input', calcularVTC);
-    grasas.addEventListener('input', calcularVTC);
+    peso.addEventListener('input', calcularVTC);
+    factor.addEventListener('change', calcularVTC);
+
+    // Inicial
+    calcularVTC();
   </script>
+
 </body>
 </html>
