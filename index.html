@@ -249,7 +249,8 @@
         });
       
         // ✅ CARGAR DATOS GUARDADOS
-        cargarLocalStorage();
+       cargarLocalStorage();
+      cargarAlimentos();
       }); // <- cierre del DOMContentLoaded
       
 
@@ -269,6 +270,9 @@
       if (buscar) query = query.ilike('alimento', `%${buscar}%`);
 
       const { data, error } = await query;
+
+        console.log("Resultado de Supabase:", { data, error }); // <-- 👈 AGREGÁ ESTO
+
       if (error) return console.error('Error al cargar alimentos:', error);
 
       data.forEach(({ id, alimento }) => {
