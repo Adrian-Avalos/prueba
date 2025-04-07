@@ -8,7 +8,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Calculadora Nutricional</title>
 
-  <!-- Manifest y Service Worker -->
+  <!-- Iconos y Fuentes -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Manifest y Estilos -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="img/icono-192.png">
   <link rel="apple-touch-icon" href="img/icono-180.png">
@@ -18,7 +22,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-
+  <!-- Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -29,17 +33,46 @@
     }
   </script>
 
-  <!-- Estilos -->
+  <!-- Estilos personalizados -->
   <style>
-    body { background-color: #000; color: #fff; padding-bottom: 3rem; }
-    label { margin-top: .5rem; }
-    .circle { border-radius: 50%; width: 100px; height: 100px; border: 5px solid #444; display: flex; align-items: center; justify-content: center; margin: auto; margin-bottom: 1rem; font-weight: bold; font-size: 1.2rem; }
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      padding-bottom: 3rem;
+    }
+    h1 {
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+    label {
+      margin-top: .5rem;
+    }
+    .circle {
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      border: 5px solid #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: auto;
+      margin-bottom: 1rem;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
     .carbs { border-color: #ffc107; color: #ffc107; }
     .protein { border-color: #198754; color: #198754; }
     .fat { border-color: #dc3545; color: #dc3545; }
     .table thead { background-color: #222; color: #fff; }
     .table tbody td { background-color: #333; color: #fff; }
-    .form-section { background: #111; padding: 1rem; border-radius: 1rem; margin-top: 2rem; }
+    .form-section {
+      background: #111;
+      padding: 1rem;
+      border-radius: 1rem;
+      margin-top: 2rem;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+    }
     #detalle-alimento {
       max-height: 0;
       overflow: hidden;
@@ -49,26 +82,30 @@
       max-height: 1000px;
       transition: max-height 0.8s ease;
     }
-        .table td:nth-child(2), .table th:nth-child(2) {
-      max-width: 200px; /* Ajustá según te convenga */
+    .table td:nth-child(2), .table th:nth-child(2) {
+      max-width: 200px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-        .table td:nth-child(2):hover {
+    .table td:nth-child(2):hover {
       white-space: normal;
       overflow: visible;
       text-overflow: unset;
-      background-color: #222; /* para resaltar el hover */
+      background-color: #222;
       z-index: 10;
       position: relative;
     }
-        .titulo-grupo {
+    .titulo-grupo {
       background: #222;
       padding: 0.7rem 1rem;
       margin-top: 1rem;
       cursor: pointer;
       border-radius: 0.5rem;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     .tabla-comida {
       padding: 0.5rem;
@@ -77,12 +114,16 @@
     .d-none {
       display: none;
     }
-
+    button i {
+      margin-right: 0.4rem;
+    }
   </style>
 </head>
 <body>
 <div class="container py-4">
-  <h1 class="fw-bold text-center">Calculadora Nutricional</h1>
+  <h1 class="fw-bold text-center mb-3">
+    <i class="bi bi-activity"></i> Calculadora Nutricional
+  </h1>
   <p id="calorias-restantes" class="text-center">Todavía puedes comer <strong>0</strong> calorías</p>
 
   <div class="row text-center mb-4">
@@ -113,69 +154,73 @@
         </select>
       </div>
       <div class="col-md-4">
-      <label class="form-label">Tiempo de comida</label>
-      <select id="tipo-comida" class="form-select">
-        <option value="desayuno">Desayuno</option>
-        <option value="media_manana">Media mañana</option>
-        <option value="almuerzo">Almuerzo</option>
-        <option value="merienda">Merienda</option>
-        <option value="cena">Cena</option>
-        <option value="colacion">Colación</option>
-      </select>
+        <label class="form-label">Tiempo de comida</label>
+        <select id="tipo-comida" class="form-select">
+          <option value="desayuno">Desayuno</option>
+          <option value="media_manana">Media mañana</option>
+          <option value="almuerzo">Almuerzo</option>
+          <option value="merienda">Merienda</option>
+          <option value="cena">Cena</option>
+          <option value="colacion">Colación</option>
+        </select>
       </div>
       <div class="col-md-3">
         <label class="form-label">Cantidad</label>
         <input type="number" id="gramos" class="form-control" placeholder="Cantidad">
       </div>
       <div class="col-md-4 d-flex align-items-end">
-        <button onclick="agregarAlimento()" class="btn btn-primary w-100">Agregar alimento</button>
+        <button onclick="agregarAlimento()" class="btn btn-primary w-100">
+          <i class="bi bi-plus-circle"></i> Agregar alimento
+        </button>
       </div>
       <div class="text-end">
-        <button id="toggle-detalle" class="btn btn-secondary mt-2">Mostrar detalles nutricionales</button>
+        <button id="toggle-detalle" class="btn btn-secondary mt-2">
+          <i class="bi bi-list-ul"></i> Mostrar detalles nutricionales
+        </button>
       </div>
     </div>
     <div id="detalle-alimento" class="row g-2 mt-3"></div>
   </div>
-<div class="text-end mt-3">
-  <button onclick="toggleTodosLosGrupos()" class="btn btn-outline-light btn-sm">Expandir/Colapsar todos</button>
+
+  <div class="text-end mt-3">
+    <button onclick="toggleTodosLosGrupos()" class="btn btn-outline-light btn-sm">
+      <i class="bi bi-arrows-expand"></i> Expandir/Colapsar todos
+    </button>
+  </div>
+
+  <div id="listas-alimentos" class="mt-4">
+    <div class="grupo-comida">
+      <h3 class="titulo-grupo" onclick="toggleGrupo('desayuno')"><i class="bi bi-egg-fried"></i> Desayuno</h3>
+      <div id="lista-desayuno" class="tabla-comida d-none"></div>
+    </div>
+    <div class="grupo-comida">
+      <h3 class="titulo-grupo" onclick="toggleGrupo('media_manana')"><i class="bi bi-cup-straw"></i> Media mañana</h3>
+      <div id="lista-media_manana" class="tabla-comida d-none"></div>
+    </div>
+    <div class="grupo-comida">
+      <h3 class="titulo-grupo" onclick="toggleGrupo('almuerzo')"><i class="bi bi-plate"></i> Almuerzo</h3>
+      <div id="lista-almuerzo" class="tabla-comida d-none"></div>
+    </div>
+    <div class="grupo-comida">
+      <h3 class="titulo-grupo" onclick="toggleGrupo('merienda')"><i class="bi bi-cup"></i> Merienda</h3>
+      <div id="lista-merienda" class="tabla-comida d-none"></div>
+    </div>
+    <div class="grupo-comida">
+      <h3 class="titulo-grupo" onclick="toggleGrupo('cena')"><i class="bi bi-moon-stars"></i> Cena</h3>
+      <div id="lista-cena" class="tabla-comida d-none"></div>
+    </div>
+    <div class="grupo-comida">
+      <h3 class="titulo-grupo" onclick="toggleGrupo('colacion')"><i class="bi bi-cup-hot"></i> Colación</h3>
+      <div id="lista-colacion" class="tabla-comida d-none"></div>
+    </div>
+  </div>
+
+  <div id="totales" class="text-center fw-bold fs-5 mt-4"></div>
+
+  <canvas id="graficoCircular" width="300" height="300" class="mx-auto d-block mt-4"></canvas>
 </div>
 
-<div id="listas-alimentos" class="mt-4">
-  <div class="grupo-comida">
-    <h3 class="titulo-grupo" onclick="toggleGrupo('desayuno')">🍳 Desayuno</h3>
-    <div id="lista-desayuno" class="tabla-comida d-none"></div>
-  </div>
-  <div class="grupo-comida">
-  <h3 class="titulo-grupo" onclick="toggleGrupo('media_manana')">🍌 Media mañana</h3>
-  <div id="lista-media_manana" class="tabla-comida d-none"></div>
-  </div>
-  <div class="grupo-comida">
-    <h3 class="titulo-grupo" onclick="toggleGrupo('almuerzo')">🍽️ Almuerzo</h3>
-    <div id="lista-almuerzo" class="tabla-comida d-none"></div>
-  </div>
-  <div class="grupo-comida">
-    <h3 class="titulo-grupo" onclick="toggleGrupo('merienda')">☕ Merienda</h3>
-    <div id="lista-merienda" class="tabla-comida d-none"></div>
-  </div>
-  <div class="grupo-comida">
-    <h3 class="titulo-grupo" onclick="toggleGrupo('cena')">🌙 Cena</h3>
-    <div id="lista-cena" class="tabla-comida d-none"></div>
-  </div>
-  <div class="grupo-comida">
-  <h3 class="titulo-grupo" onclick="toggleGrupo('colacion')">🥛 Colación</h3>
-  <div id="lista-colacion" class="tabla-comida d-none"></div>
-</div>
-</div>
-
-<div id="totales" class="text-center fw-bold fs-5"></div>
-
-<!-- Agregá esta línea -->
-<canvas id="graficoCircular" width="300" height="300" class="mx-auto d-block mt-4"></canvas>
-
-</div>
-  
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="app.js"></script>
-
 </body>
 </html>
