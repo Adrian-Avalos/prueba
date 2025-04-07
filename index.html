@@ -183,9 +183,6 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqYnV3dGVtYXZsZHl0c3NiaWNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2ODIxOTMsImV4cCI6MjA1OTI1ODE5M30.VBwS5W5qEFaBVeXXITpGLZa5JSvXkZuaEIiYd33-oy4'
     );
   
-    // ✅ Cargar los datos desde localStorage al iniciar
-  cargarLocalStorage();
-    
     const columnas = [
       "valor_energetico", "agua", "proteinas", "lipidos_totales", "colesterol",
       "ac_grasos_saturados", "ac_grasos_monoinsaturados", "ac_grasos_poliinsaturados", "ac_grasos_trans",
@@ -204,22 +201,68 @@
       merienda: [],
       cena: [],
       colacion: []
-    };
-
-        function guardarLocalStorage() {
-      localStorage.setItem('alimentosPorGrupo', JSON.stringify(alimentosSeleccionados));
-    }
-    
-    // Cargar desde localStorage si existen datos
-    function cargarLocalStorage() {
-      const datos = localStorage.getItem('alimentosPorGrupo');
-      if (datos) {
-        alimentosSeleccionados = JSON.parse(datos);
-        Object.keys(alimentosSeleccionados).forEach(tipo => {
-          actualizarTabla(tipo);
+       };
+      
+        // ✅ TODAS LAS FUNCIONES ADENTRO
+        function guardarLocalStorage() { ... }
+        function cargarLocalStorage() { ... }
+        function convertirANumero(valor) { ... }
+        async function cargarAlimentos() { ... }
+        function actualizarTabla(tipo) { ... }
+        function calcularTotales() { ... }
+        function actualizarGrafico(t) { ... }
+        function eliminarGrupo(tipo) {
+          if (confirm(`¿Seguro que querés eliminar todos los alimentos de ${tipo}?`)) {
+            alimentosSeleccionados[tipo] = [];
+            actualizarTabla(tipo);
+          }
+        }
+        function exportarGrupo(tipo) {
+          const datos = alimentosSeleccionados[tipo];
+          if (!datos.length) return alert('No hay datos para exportar.');
+      
+          let csv = "Alimento,Cantidad (g),Calorías,HC,Proteínas,Grasas\n";
+          datos.forEach(a => {
+            csv += `"${a.alimento}",${a.cantidad},${(convertirANumero(a.valor_energetico) * a.factor).toFixed(1)},${(convertirANumero(a.carbohidratos_disponibles) * a.factor).toFixed(1)},${(convertirANumero(a.proteinas) * a.factor).toFixed(1)},${(convertirANumero(a.lipidos_totales) * a.factor).toFixed(1)}\n`;
+          });
+      
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = `${tipo}_nutricion.csv`;
+          link.click();
+        }
+      
+        // ✅ FUNCIONES GLOBALES
+        window.agregarAlimento = function () { ... }
+        window.eliminarAlimento = function (tipo, index) { ... }
+        window.modificarCantidad = function (tipo, index) { ... }
+        window.mostrarDatosAlimento = async function () { ... }
+      
+        // ✅ EVENTOS
+        document.getElementById('buscador').addEventListener('input', cargarAlimentos);
+        document.getElementById('toggle-detalle').addEventListener('click', () => {
+          const detalle = document.getElementById('detalle-alimento');
+          const btn = document.getElementById('toggle-detalle');
+          const activo = detalle.classList.toggle('activo');
+          btn.textContent = activo ? 'Ocultar detalles nutricionales' : 'Mostrar detalles nutricionales';
         });
-      }
-    }
+      
+        // ✅ CARGAR DATOS GUARDADOS
+        cargarLocalStorage();
+      }); // <- cierre del DOMContentLoaded
+      
+          let csv = "Alimento,Cantidad (g),Calorías,HC,Proteínas,Grasas\n";
+          datos.forEach(a => {
+            csv += `"${a.alimento}",${a.cantidad},${(convertirANumero(a.valor_energetico) * a.factor).toFixed(1)},${(convertirANumero(a.carbohidratos_disponibles) * a.factor).toFixed(1)},${(convertirANumero(a.proteinas) * a.factor).toFixed(1)},${(convertirANumero(a.lipidos_totales) * a.factor).toFixed(1)}\n`;
+          });
+      
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = `${tipo}_nutricion.csv`;
+          link.click();
+        }
 
     function convertirANumero(valor) {
       if (!valor) return 0;
