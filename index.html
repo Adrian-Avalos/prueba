@@ -252,17 +252,6 @@
         cargarLocalStorage();
       }); // <- cierre del DOMContentLoaded
       
-          let csv = "Alimento,Cantidad (g),Calorías,HC,Proteínas,Grasas\n";
-          datos.forEach(a => {
-            csv += `"${a.alimento}",${a.cantidad},${(convertirANumero(a.valor_energetico) * a.factor).toFixed(1)},${(convertirANumero(a.carbohidratos_disponibles) * a.factor).toFixed(1)},${(convertirANumero(a.proteinas) * a.factor).toFixed(1)},${(convertirANumero(a.lipidos_totales) * a.factor).toFixed(1)}\n`;
-          });
-      
-          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download = `${tipo}_nutricion.csv`;
-          link.click();
-        }
 
     function convertirANumero(valor) {
       if (!valor) return 0;
