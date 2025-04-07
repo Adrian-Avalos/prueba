@@ -111,13 +111,15 @@
         </select>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Tipo de comida</label>
-        <select id="tipo-comida" class="form-select">
-          <option value="desayuno">Desayuno</option>
-          <option value="almuerzo">Almuerzo</option>
-          <option value="merienda">Merienda</option>
-          <option value="cena">Cena</option>
-        </select>
+      <label class="form-label">Tiempo de comida</label>
+      <select id="tipo-comida" class="form-select">
+        <option value="desayuno">Desayuno</option>
+        <option value="media_manana">Media mañana</option>
+        <option value="almuerzo">Almuerzo</option>
+        <option value="merienda">Merienda</option>
+        <option value="cena">Cena</option>
+        <option value="colacion">Colación</option>
+      </select>
       </div>
       <div class="col-md-3">
         <label class="form-label">Cantidad</label>
@@ -142,6 +144,10 @@
     <div id="lista-desayuno" class="tabla-comida d-none"></div>
   </div>
   <div class="grupo-comida">
+  <h3 class="titulo-grupo" onclick="toggleGrupo('media_manana')">🥤 Media mañana</h3>
+  <div id="lista-media_manana" class="tabla-comida d-none"></div>
+  </div>
+  <div class="grupo-comida">
     <h3 class="titulo-grupo" onclick="toggleGrupo('almuerzo')">🍽️ Almuerzo</h3>
     <div id="lista-almuerzo" class="tabla-comida d-none"></div>
   </div>
@@ -153,6 +159,10 @@
     <h3 class="titulo-grupo" onclick="toggleGrupo('cena')">🌙 Cena</h3>
     <div id="lista-cena" class="tabla-comida d-none"></div>
   </div>
+  <div class="grupo-comida">
+  <h3 class="titulo-grupo" onclick="toggleGrupo('colacion')">🍽️ Colación</h3>
+  <div id="lista-colacion" class="tabla-comida d-none"></div>
+</div>
 </div>
 
 <div id="totales" class="text-center fw-bold fs-5"></div>
@@ -184,12 +194,14 @@
     ];
 
     const macrosObjetivo = { calorias: 2488, hc: 311, proteinas: 124, grasas: 82 };
-    let alimentosSeleccionados = {
-        desayuno: [],
-        almuerzo: [],
-        merienda: [],
-        cena: []
-      };
+      let alimentosSeleccionados = {
+      desayuno: [],
+      media_manana: [],
+      almuerzo: [],
+      merienda: [],
+      cena: [],
+      colacion: []
+    };
 
     function convertirANumero(valor) {
       if (!valor) return 0;
@@ -365,12 +377,12 @@
       div.classList.toggle('d-none');
     }
   function toggleTodosLosGrupos() {
-  const grupos = ['desayuno', 'almuerzo', 'merienda', 'cena'];
-  grupos.forEach(grupo => {
-    const div = document.getElementById(`lista-${grupo}`);
-    div.classList.toggle('d-none');
-  });
-}
+    const grupos = ['desayuno', 'media_manana', 'almuerzo', 'merienda', 'cena', 'colacion'];
+    grupos.forEach(grupo => {
+      const div = document.getElementById(`lista-${grupo}`);
+      div.classList.toggle('d-none');
+    });
+  }
 </script>
 </body>
 </html>
