@@ -414,29 +414,6 @@
         }
       };
       
-      // ✅ NUEVO: Eliminar todos los alimentos del grupo
-      function eliminarGrupo(tipo) {
-        if (confirm(`¿Seguro que querés eliminar todos los alimentos de ${tipo}?`)) {
-          alimentosSeleccionados[tipo] = [];
-          actualizarTabla(tipo);
-        }
-      }
-            function exportarGrupo(tipo) {
-          const datos = alimentosSeleccionados[tipo];
-          if (!datos.length) return alert('No hay datos para exportar.');
-        
-          let csv = "Alimento,Cantidad (g),Calorías,HC,Proteínas,Grasas\n";
-          datos.forEach(a => {
-            csv += `"${a.alimento}",${a.cantidad},${(convertirANumero(a.valor_energetico)*a.factor).toFixed(1)},${(convertirANumero(a.carbohidratos_disponibles)*a.factor).toFixed(1)},${(convertirANumero(a.proteinas)*a.factor).toFixed(1)},${(convertirANumero(a.lipidos_totales)*a.factor).toFixed(1)}\n`;
-          });
-        
-          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download = `${tipo}_nutricion.csv`;
-          link.click();
-        }
-
       
       const toggleBtn = document.getElementById('toggle-detalle');
       const detalleAlimento = document.getElementById('detalle-alimento');
