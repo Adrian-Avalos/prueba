@@ -1,5 +1,4 @@
-<script>
-  let graficoMacros = null;
+let graficoMacros = null;
 
   window.addEventListener('DOMContentLoaded', async () => {
     const client = supabase.createClient(
@@ -253,4 +252,3 @@
       document.getElementById(`lista-${grupo}`).classList.toggle('d-none')
     );
   }
-</script>
