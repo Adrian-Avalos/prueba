@@ -140,7 +140,7 @@
     }
 
     const headerRow = document.getElementById('header-row');
-    headerRow.innerHTML = '<th>ALIMENTO</th><th>CANTIDAD</th>';
+    headerRow.innerHTML = '<th>Acciones</th><th>ALIMENTO</th><th>CANTIDAD</th>';
     columnas.forEach(col => {
       const th = document.createElement('th');
       th.textContent = col.replace(/_/g, ' ').toUpperCase();
@@ -198,22 +198,27 @@
     };
 
     function actualizarTabla() {
-      const tabla = document.getElementById('tabla-alimentos');
-      tabla.innerHTML = '';
-      alimentosSeleccionados.forEach((a, i) => {
-        let fila = `<tr><td>${a.alimento}</td><td>${a.cantidad} ${a.unidad}</td>`;
-        columnas.forEach(k => {
-          const valorNumerico = convertirANumero(a[k]) * a.factor;
-          fila += `<td>${isNaN(valorNumerico) ? '-' : valorNumerico.toFixed(1)}</td>`;
-        });
-        fila += `<td>
-          <button class='btn btn-warning btn-sm' onclick='modificarCantidad(${i})'>✏️</button>
-          <button class='btn btn-danger btn-sm' onclick='eliminarAlimento(${i})'>❌</button>
-        </td></tr>`;
-        tabla.innerHTML += fila;
-      });
-      calcularTotales();
-    }
+  const tabla = document.getElementById('tabla-alimentos');
+  tabla.innerHTML = '';
+  alimentosSeleccionados.forEach((a, i) => {
+    let fila = `<tr>
+      <td>
+        <button class='btn btn-warning btn-sm me-1' onclick='modificarCantidad(${i})'>✏️</button>
+        <button class='btn btn-danger btn-sm' onclick='eliminarAlimento(${i})'>❌</button>
+      </td>
+      <td>${a.alimento}</td>
+      <td>${a.cantidad} ${a.unidad}</td>`;
+    
+    columnas.forEach(k => {
+      const valorNumerico = convertirANumero(a[k]) * a.factor;
+      fila += `<td>${isNaN(valorNumerico) ? '-' : valorNumerico.toFixed(1)}</td>`;
+    });
+
+    fila += `</tr>`;
+    tabla.innerHTML += fila;
+  });
+  calcularTotales();
+}
 
     function calcularTotales() {
       const t = { calorias: 0, hc: 0, proteinas: 0, grasas: 0 };
