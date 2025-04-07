@@ -3,15 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Menú Inferior Fijo</title>
+  <title>Menú Inferior Explosivo</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
+    :root {
+      --primary: #0d6efd;
+      --bg: #121212;
+      --fg: #e0e0e0;
+      --border: #2a2a2a;
+    }
+
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
-      background: #f9f9f9;
-      padding-bottom: 70px; /* espacio para el menú */
+      background: var(--bg);
+      color: var(--fg);
+      padding-bottom: 80px;
     }
 
     .content {
@@ -19,7 +27,6 @@
     }
 
     h1 {
-      color: #222;
       font-size: 28px;
     }
 
@@ -27,23 +34,23 @@
       position: fixed;
       bottom: 0;
       width: 100%;
-      background: #fff;
-      border-top: 1px solid #ddd;
+      background: #1c1c1c;
+      border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-around;
       padding: 10px 0;
-      box-shadow: 0 -3px 10px rgba(0,0,0,0.08);
+      box-shadow: 0 -3px 10px rgba(0,0,0,0.5);
       z-index: 1000;
-      transition: background-color 0.3s ease;
     }
 
     .bottom-nav a {
       text-decoration: none;
-      color: #666;
+      color: var(--fg);
       font-size: 12px;
       text-align: center;
       flex: 1;
-      transition: color 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
 
     .bottom-nav a .icon {
@@ -53,56 +60,85 @@
       height: 24px;
     }
 
-    .bottom-nav a:hover,
-    .bottom-nav a.active {
-      color: #007bff;
-    }
-
-    .bottom-nav a.active svg {
-      stroke: #007bff;
-    }
-
     .bottom-nav a svg {
-      stroke: #666;
+      stroke: var(--fg);
       stroke-width: 1.5;
       transition: stroke 0.3s ease;
+    }
+
+    .bottom-nav a:hover svg,
+    .bottom-nav a.active svg {
+      stroke: var(--primary);
+    }
+
+    .bottom-nav a span {
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* Efecto de explosión */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--primary);
+      animation: explode 0.6s ease-out;
+      transform: scale(0);
+      opacity: 0.75;
+      pointer-events: none;
+    }
+
+    @keyframes explode {
+      to {
+        transform: scale(10);
+        opacity: 0;
+      }
     }
   </style>
 </head>
 <body>
 
   <div class="content">
-    <h1>Bienvenido</h1>
-    <p>Este es un ejemplo de página con menú inferior fijo para móviles.</p>
-    <p>Desliza hacia abajo para ver cómo el menú permanece en su lugar.</p>
+    <h1>Modo Oscuro</h1>
+    <p>Este menú tiene efecto explosivo y carga otras páginas.</p>
   </div>
 
   <div class="bottom-nav">
-    <a href="#inicio" class="active">
+    <a href="inicio.html" class="active" onclick="explode(event)">
       <div class="icon" data-lucide="home"></div>
-      Inicio
+      <span>Inicio</span>
     </a>
-    <a href="#servicios">
+    <a href="servicios.html" onclick="explode(event)">
       <div class="icon" data-lucide="briefcase"></div>
-      Servicios
+      <span>Servicios</span>
     </a>
-    <a href="#contacto">
+    <a href="contacto.html" onclick="explode(event)">
       <div class="icon" data-lucide="phone"></div>
-      Contacto
+      <span>Contacto</span>
     </a>
   </div>
 
   <script>
     lucide.createIcons();
 
-    // Para cambiar la clase activa al hacer clic
-    const links = document.querySelectorAll('.bottom-nav a');
-    links.forEach(link => {
-      link.addEventListener('click', () => {
-        links.forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
-      });
-    });
+    function explode(event) {
+      const link = event.currentTarget;
+      const circle = document.createElement('span');
+      const rect = link.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = event.clientX - rect.left - size / 2;
+      const y = event.clientY - rect.top - size / 2;
+
+      circle.className = 'ripple';
+      circle.style.width = circle.style.height = size + 'px';
+      circle.style.left = x + 'px';
+      circle.style.top = y + 'px';
+
+      link.appendChild(circle);
+
+      setTimeout(() => {
+        link.removeChild(circle);
+      }, 600);
+    }
   </script>
 
 </body>
