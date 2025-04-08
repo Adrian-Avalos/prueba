@@ -1,66 +1,246 @@
+<!--
+© 2025 Ramón Adrian Avalos Verá (GitHub: Adrian-Avalos)
+Este código no puede ser copiado, modificado ni usado con fines comerciales sin permiso.
+-->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Modelo 3D en GitHub Pages</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+
+  <!-- Manifest e íconos PWA -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="imagenes/icono.ico">
+  <link rel="icon" type="image/png" href="imagenes/icono.png">
+
+  <title>Nutrición-APP</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('SW registrado:', reg.scope))
+          .catch(err => console.error('SW error:', err));
+      });
+    }
+  </script>
+
   <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
+    body {
+      margin: 0;
+      background-color: #fff;
+      font-family: 'Helvetica Neue', sans-serif;
+      overflow: hidden;
+    }
+
+    .slide {
+      height: 100vh;
+      width: 100vw;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 30px;
+      color: #fff;
+      position: absolute;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .slide h2 {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .slide p {
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .slide-buttons {
+      margin-top: 25px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-slide {
+      margin: 0 10px;
+      padding: 12px 24px;
+      font-weight: bold;
+      border-radius: 30px;
+      border: none;
+    }
+
+    .slide1 { background-image: url('imagenes/slide6.jpeg'); z-index: 3; }
+    .slide2 { background-image: url('imagenes/slide5.png'); z-index: 2; }
+    .slide3 { background-image: url('imagenes/slide4.jpg'); z-index: 1; }
+
+    .dots {
+      display: flex;
+      justify-content: center;
+      margin-top: 15px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      margin: 0 5px;
+      border-radius: 50%;
+      background-color: #ccc;
+      transition: background-color 0.3s;
+    }
+
+    .dot.active {
+      background-color: #28a745;
+    }
+
+    /* LOGIN FULLSCREEN con animación */
+    #modalLogin {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9999;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    #modalLogin.mostrar {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #modalLogin .form-control {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+    }
+
+    #modalLogin input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    #modalLogin h4 {
+      margin-bottom: 30px;
+    }
+
+    .btn-green {
+      background-color: #28a745;
+      color: #fff;
+      border-radius: 30px;
+      font-weight: bold;
+      padding: 12px;
+      border: none;
+      width: 100%;
+    }
+
+    .cerrar {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 30px;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .ver-pass {
+      position: absolute;
+      right: 15px;
+      top: 9px;
+      cursor: pointer;
+      color: #ccc;
+    }
+
+    .input-group {
+      position: relative;
+    }
   </style>
 </head>
 <body>
-  <script type="module">
-    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-    import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-    import { GLTFLoader } from 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a1a1a);
+  <!-- SLIDES -->
+  <div id="slidesContainer">
+    <div class="slide slide1">
+      <div>
+        <h2>Conoce qué comes</h2>
+        <p>Sigue fácilmente tu ingesta de calorías y nutrientes utilizando nuestra gran base de datos.</p>
+        <div class="dots">
+          <div class="dot active"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="slide-buttons">
+          <button class="btn btn-light btn-slide" onclick="irLogin()">Inicia sesión</button>
+        </div>
+      </div>
+    </div>
 
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 1, 5);
+    <div class="slide slide2">
+      <div>
+        <h2>Vive de forma saludable</h2>
+        <p>Planifica tu alimentación y siéntete genial día a día.</p>
+        <div class="dots">
+          <div class="dot"></div>
+          <div class="dot active"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="slide-buttons">
+          <button class="btn btn-light btn-slide" onclick="irLogin()">Inicia sesión</button>
+        </div>
+      </div>
+    </div>
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+    <div class="slide slide3">
+      <div>
+        <h2>Tu nutrición, en tus manos</h2>
+        <p>Una herramienta clara y práctica para alcanzar tus metas de salud.</p>
+        <div class="dots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot active"></div>
+        </div>
+        <div class="slide-buttons">
+          <button class="btn btn-light btn-slide" onclick="irLogin()">Inicia sesión</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    const controls = new OrbitControls(camera, renderer.domElement);
+  <!-- LOGIN -->
+  <div id="modalLogin">
+    <div class="cerrar" onclick="cerrarModal()">✕</div>
+    <h4>Inicia sesión</h4>
+    <form onsubmit="return validarLogin(event)" style="width: 100%; max-width: 350px;">
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="text" class="form-control" id="email" placeholder="ADMINISTRADOR" value="ADMINISTRADOR">
+      </div>
+      <div class="form-group input-group">
+        <label>Contraseña</label>
+        <input type="password" class="form-control" id="password" placeholder="password">
+        <span class="ver-pass" onclick="togglePassword()">👁️</span>
+      </div>
+      <button type="submit" class="btn-green">Inicia sesión</button>
+      <div class="text-center mt-3">
+        <small>¿Se te ha olvidado tu contraseña?</small>
+      </div>
+    </form>
+  </div>
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
+  <!-- SCRIPTS -->
+<script src="js/index.js"></script>
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(3, 3, 3);
-    scene.add(directionalLight);
-
-    // Cargar modelo .glb (astronauta desde internet)
-    const loader = new GLTFLoader();
-    loader.load(
-      'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-      (gltf) => {
-        const model = gltf.scene;
-        model.scale.set(2, 2, 2);
-        scene.add(model);
-      },
-      undefined,
-      (error) => {
-        console.error('Error al cargar modelo:', error);
-      }
-    );
-
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    }
-
-    animate();
-
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
 </body>
 </html>
