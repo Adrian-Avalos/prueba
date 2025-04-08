@@ -95,9 +95,6 @@ let graficoMacros = null;
         const th = document.createElement('th');
         th.textContent = col.replace(/_/g, ' ').toUpperCase();
         headerRow.appendChild(th);
-
-      actualizarWidgetTotales(totalHC, totalProteinas, totalGrasas);
-
       });
 
       const cuerpo = document.getElementById(`body-${tipo}`);
@@ -257,47 +254,3 @@ let graficoMacros = null;
       document.getElementById(`lista-${grupo}`).classList.toggle('d-none')
     );
   }
-function actualizarWidgetTotales(hc = 0, prot = 0, grasas = 0) {
-  document.getElementById("totalHC").textContent = hc + "g";
-  document.getElementById("totalProt").textContent = prot + "g";
-  document.getElementById("totalGrasas").textContent = grasas + "g";
-}
-
-// Movimiento del widget
-(function () {
-  const widget = document.getElementById('widgetTotales');
-  let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
-
-  widget.addEventListener('mousedown', dragMouseDown);
-  widget.addEventListener('touchstart', dragMouseDown, { passive: false });
-
-  function dragMouseDown(e) {
-    e.preventDefault();
-    mouseX = e.clientX || e.touches[0].clientX;
-    mouseY = e.clientY || e.touches[0].clientY;
-
-    document.addEventListener('mouseup', closeDragElement);
-    document.addEventListener('touchend', closeDragElement);
-    document.addEventListener('mousemove', elementDrag);
-    document.addEventListener('touchmove', elementDrag, { passive: false });
-  }
-
-  function elementDrag(e) {
-    e.preventDefault();
-    let dx = (e.clientX || e.touches[0].clientX) - mouseX;
-    let dy = (e.clientY || e.touches[0].clientY) - mouseY;
-    mouseX = e.clientX || e.touches[0].clientX;
-    mouseY = e.clientY || e.touches[0].clientY;
-    widget.style.top = (widget.offsetTop + dy) + "px";
-    widget.style.left = (widget.offsetLeft + dx) + "px";
-    widget.style.right = "auto";
-    widget.style.bottom = "auto";
-  }
-
-  function closeDragElement() {
-    document.removeEventListener('mouseup', closeDragElement);
-    document.removeEventListener('mousemove', elementDrag);
-    document.removeEventListener('touchend', closeDragElement);
-    document.removeEventListener('touchmove', elementDrag);
-  }
-})();
