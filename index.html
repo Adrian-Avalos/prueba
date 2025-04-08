@@ -1,98 +1,124 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>VTC por Peso Corporal</title>
+  <title>Mini Noomo Labs</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #121212;
-      color: #e0e0e0;
       margin: 0;
-      padding: 20px;
+      background-color: #0d0d0d;
+      overflow: hidden;
+      font-family: sans-serif;
     }
-
-    .container {
-      max-width: 450px;
-      margin: 0 auto;
-      background-color: #1e1e1e;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: 600;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: none;
-      border-radius: 6px;
-      background: #2c2c2c;
-      color: #fff;
-      font-size: 16px;
-    }
-
-    .resultado {
-      margin-top: 25px;
-      padding: 15px;
-      background: #00bfa5;
-      border-radius: 8px;
-      text-align: center;
-      font-size: 20px;
-      font-weight: bold;
-      color: #fff;
+    #gui {
+      position: absolute;
+      top: 10px;
+      right: 10px;
     }
   </style>
 </head>
 <body>
-
-  <div class="container">
-    <h1>Calculadora VTC</h1>
-
-    <label for="peso">Peso del paciente (kg)</label>
-    <input type="number" id="peso" value="70" />
-
-    <label for="factor">Requerimiento energético (kcal/kg)</label>
-    <select id="factor">
-      <option value="20">20 kcal/kg (Reposo / pérdida de peso)</option>
-      <option value="25">25 kcal/kg (Moderado)</option>
-      <option value="30" selected>30 kcal/kg (Mantenimiento)</option>
-      <option value="35">35 kcal/kg (Actividad alta / aumento)</option>
-    </select>
-
-    <div class="resultado" id="vtc">VTC Total: 0 kcal</div>
-  </div>
+  <div id="gui"></div>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.17.0/dist/lil-gui.min.js"></script>
 
   <script>
-    const peso = document.getElementById('peso');
-    const factor = document.getElementById('factor');
-    const resultado = document.getElementById('vtc');
+    // Escena
+    const scene = new THREE.Scene();
 
-    function calcularVTC() {
-      const p = parseFloat(peso.value) || 0;
-      const f = parseFloat(factor.value) || 30;
-      const total = p * f;
-      resultado.textContent = `VTC Total: ${total.toFixed(0)} kcal`;
+    // Cámara
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.z = 4;
+
+    // Renderizador
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Luz
+    const light = new THREE.PointLight(0xffffff, 1.2);
+    light.position.set(5, 5, 5);
+    scene.add(light);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+    scene.add(ambient);
+
+    // Geometría "medusa abstracta"
+    const geometry = new THREE.SphereGeometry(1, 128, 128);
+    geometry.verticesNeedUpdate = true;
+
+    // Material
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x00ffff,
+      metalness: 0.5,
+      roughness: 0.2,
+      transparent: true,
+      opacity: 0.8
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    // Deformación de la esfera
+    const originalVertices = geometry.attributes.position.array.slice();
+
+    function animateJellyfish() {
+      const positions = geometry.attributes.position.array;
+      const time = performance.now() * 0.001;
+      for (let i = 0; i < positions.length; i += 3) {
+        const x = originalVertices[i];
+        const y = originalVertices[i + 1];
+        const z = originalVertices[i + 2];
+        const offset = Math.sin(time + x * 2 + y * 2 + z * 2) * 0.05;
+        positions[i] = x + offset;
+        positions[i + 1] = y + offset;
+        positions[i + 2] = z + offset;
+      }
+      geometry.attributes.position.needsUpdate = true;
     }
 
-    peso.addEventListener('input', calcularVTC);
-    factor.addEventListener('change', calcularVTC);
+    // Controles
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-    // Inicial
-    calcularVTC();
+    // GUI
+    const gui = new dat.GUI({ container: document.getElementById('gui') });
+    const settings = {
+      color: '#00ffff',
+      opacity: 0.8,
+      metalness: 0.5,
+      roughness: 0.2
+    };
+
+    gui.addColor(settings, 'color').onChange(value => {
+      material.color.set(value);
+    });
+    gui.add(settings, 'opacity', 0, 1).onChange(value => {
+      material.opacity = value;
+    });
+    gui.add(settings, 'metalness', 0, 1).onChange(value => {
+      material.metalness = value;
+    });
+    gui.add(settings, 'roughness', 0, 1).onChange(value => {
+      material.roughness = value;
+    });
+
+    // Animación
+    function animate() {
+      requestAnimationFrame(animate);
+      animateJellyfish();
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   </script>
-
 </body>
 </html>
