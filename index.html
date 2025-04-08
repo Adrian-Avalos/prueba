@@ -231,42 +231,39 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
   </div>
 
   <!-- SCRIPT LOGIN CON SUPABASE -->
-  <script>
-    const supa = supabase.createClient(
-  'https://djbuwtemavldytssbicb.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqYnV3dGVtYXZsZHl0c3NiaWNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2ODIxOTMsImV4cCI6MjA1OTI1ODE5M30.VBwS5W5qEFaBVeXXITpGLZa5JSvXkZuaEIiYd33-oy4'
-);
+<script>
+  const supa = supabase.createClient(
+    'https://djbuwtemavldytssbicb.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqYnV3dGVtYXZsZHl0c3NiaWNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2ODIxOTMsImV4cCI6MjA1OTI1ODE5M30.VBwS5W5qEFaBVeXXITpGLZa5JSvXkZuaEIiYd33-oy4'
+  );
 
-    function irLogin() {
-      document.getElementById('modalLogin').classList.add('mostrar');
+  function irLogin() {
+    document.getElementById('modalLogin').classList.add('mostrar');
+  }
+
+  function cerrarModal() {
+    document.getElementById('modalLogin').classList.remove('mostrar');
+  }
+
+  function togglePassword() {
+    const pass = document.getElementById('password');
+    pass.type = pass.type === 'password' ? 'text' : 'password';
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    const { data, error } = await supa.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      alert('Correo o contraseña incorrectos');
+      console.error(error);
+    } else {
+      window.location.href = "menu.html";
     }
-
-    function cerrarModal() {
-      document.getElementById('modalLogin').classList.remove('mostrar');
-    }
-
-    function togglePassword() {
-      const pass = document.getElementById('password');
-      pass.type = pass.type === 'password' ? 'text' : 'password';
-    }
-
-    document.getElementById('loginForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        alert('Correo o contraseña incorrectos');
-        console.error(error);
-      } else {
-        window.location.href = "https://www.youtube.com/@Mango1eaf/shorts";
-      }
-    });
-  </script>
+  });
+</script>
 </body>
 </html>
