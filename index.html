@@ -5,26 +5,19 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Calculadora Nutricional</title>
+  <meta name="theme-color" content="#000000">
 
-  <!-- Iconos y Fuentes -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
-  <!-- Manifest y Estilos -->
+  <!-- Manifest e íconos PWA -->
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="img/icono-192.png">
-  <link rel="apple-touch-icon" href="img/icono-180.png">
+  <link rel="apple-touch-icon" href="imagenes/icono.ico">
+  <link rel="icon" type="image/png" href="imagenes/icono.png">
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <title>Nutrición-APP</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
   <!-- Service Worker -->
   <script>
@@ -37,195 +30,217 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
     }
   </script>
 
-  <!-- Estilos personalizados -->
   <style>
     body {
-      background-color: #000;
+      margin: 0;
+      background-color: #fff;
+      font-family: 'Helvetica Neue', sans-serif;
+      overflow: hidden;
+    }
+
+    .slide {
+      height: 100vh;
+      width: 100vw;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 30px;
       color: #fff;
-      font-family: 'Inter', sans-serif;
-      padding-bottom: 3rem;
+      position: absolute;
+      transition: transform 0.5s ease-in-out;
     }
-    h1 {
-      font-weight: 700;
-      letter-spacing: -1px;
-    }
-    label {
-      margin-top: .5rem;
-    }
-    .circle {
-      border-radius: 50%;
-      width: 100px;
-      height: 100px;
-      border: 5px solid #444;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: auto;
-      margin-bottom: 1rem;
+
+    .slide h2 {
+      font-size: 28px;
       font-weight: bold;
-      font-size: 1.2rem;
     }
-    .carbs { border-color: #ffc107; color: #ffc107; }
-    .protein { border-color: #198754; color: #198754; }
-    .fat { border-color: #dc3545; color: #dc3545; }
-    .table thead { background-color: #222; color: #fff; }
-    .table tbody td { background-color: #333; color: #fff; }
-    .form-section {
-      background: #111;
-      padding: 1rem;
-      border-radius: 1rem;
-      margin-top: 2rem;
-      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+
+    .slide p {
+      font-size: 16px;
+      margin-top: 10px;
     }
-    #detalle-alimento {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.5s ease;
-    }
-    #detalle-alimento.activo {
-      max-height: 1000px;
-      transition: max-height 0.8s ease;
-    }
-    .table td:nth-child(2), .table th:nth-child(2) {
-      max-width: 200px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .table td:nth-child(2):hover {
-      white-space: normal;
-      overflow: visible;
-      text-overflow: unset;
-      background-color: #222;
-      z-index: 10;
-      position: relative;
-    }
-    .titulo-grupo {
-      background: #222;
-      padding: 0.7rem 1rem;
-      margin-top: 1rem;
-      cursor: pointer;
-      border-radius: 0.5rem;
-      font-size: 1.1rem;
+
+    .slide-buttons {
+      margin-top: 25px;
       display: flex;
+      justify-content: center;
+    }
+
+    .btn-slide {
+      margin: 0 10px;
+      padding: 12px 24px;
+      font-weight: bold;
+      border-radius: 30px;
+      border: none;
+    }
+
+    .slide1 { background-image: url('imagenes/slide6.jpeg'); z-index: 3; }
+    .slide2 { background-image: url('imagenes/slide5.png'); z-index: 2; }
+    .slide3 { background-image: url('imagenes/slide4.jpg'); z-index: 1; }
+
+    .dots {
+      display: flex;
+      justify-content: center;
+      margin-top: 15px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      margin: 0 5px;
+      border-radius: 50%;
+      background-color: #ccc;
+      transition: background-color 0.3s;
+    }
+
+    .dot.active {
+      background-color: #28a745;
+    }
+
+    /* LOGIN FULLSCREEN con animación */
+    #modalLogin {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9999;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       align-items: center;
-      gap: 0.5rem;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
     }
-    .tabla-comida {
-      padding: 0.5rem;
-      margin-bottom: 1rem;
+
+    #modalLogin.mostrar {
+      opacity: 1;
+      pointer-events: auto;
     }
-    .d-none {
-      display: none;
+
+    #modalLogin .form-control {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
     }
-    button i {
-      margin-right: 0.4rem;
+
+    #modalLogin input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    #modalLogin h4 {
+      margin-bottom: 30px;
+    }
+
+    .btn-green {
+      background-color: #28a745;
+      color: #fff;
+      border-radius: 30px;
+      font-weight: bold;
+      padding: 12px;
+      border: none;
+      width: 100%;
+    }
+
+    .cerrar {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 30px;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .ver-pass {
+      position: absolute;
+      right: 15px;
+      top: 9px;
+      cursor: pointer;
+      color: #ccc;
+    }
+
+    .input-group {
+      position: relative;
     }
   </style>
 </head>
 <body>
-<div class="container py-4">
-  <h1 class="fw-bold text-center mb-3">
-      <br>
-    <i class="bi bi-activity"></i> Calculadora Nutricional
-  </h1>
-  <p id="calorias-restantes" class="text-center">Todavía puedes comer <strong>0</strong> calorías</p>
 
-  <div class="row text-center mb-4">
-    <div class="col">
-      <div class="circle carbs" id="pctCarbs">0%</div>
-      <p class="text-warning" id="carbsRestantes">0g restantes</p>
+  <!-- SLIDES -->
+  <div id="slidesContainer">
+    <div class="slide slide1">
+      <div>
+        <h2>Conoce qué comes</h2>
+        <p>Sigue fácilmente tu ingesta de calorías y nutrientes utilizando nuestra gran base de datos.</p>
+        <div class="dots">
+          <div class="dot active"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="slide-buttons">
+          <button class="btn btn-light btn-slide" onclick="irLogin()">Inicia sesión</button>
+        </div>
+      </div>
     </div>
-    <div class="col">
-      <div class="circle protein" id="pctProteinas">0%</div>
-      <p class="text-success" id="proteinasRestantes">0g restantes</p>
+
+    <div class="slide slide2">
+      <div>
+        <h2>Vive de forma saludable</h2>
+        <p>Planifica tu alimentación y siéntete genial día a día.</p>
+        <div class="dots">
+          <div class="dot"></div>
+          <div class="dot active"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="slide-buttons">
+          <button class="btn btn-light btn-slide" onclick="irLogin()">Inicia sesión</button>
+        </div>
+      </div>
     </div>
-    <div class="col">
-      <div class="circle fat" id="pctGrasas">0%</div>
-      <p class="text-danger" id="grasasRestantes">0g restantes</p>
+
+    <div class="slide slide3">
+      <div>
+        <h2>Tu nutrición, en tus manos</h2>
+        <p>Una herramienta clara y práctica para alcanzar tus metas de salud.</p>
+        <div class="dots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot active"></div>
+        </div>
+        <div class="slide-buttons">
+          <button class="btn btn-light btn-slide" onclick="irLogin()">Inicia sesión</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="form-section">
-    <div class="row g-2">
-      <div class="col-md-8">
-        <label class="form-label">Buscar alimento</label>
-        <input type="text" id="buscador" class="form-control" placeholder="Buscar alimento...">
+  <!-- LOGIN -->
+  <div id="modalLogin">
+    <div class="cerrar" onclick="cerrarModal()">✕</div>
+    <h4>Inicia sesión</h4>
+    <form onsubmit="return validarLogin(event)" style="width: 100%; max-width: 350px;">
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="text" class="form-control" id="email" placeholder="ADMINISTRADOR" value="ADMINISTRADOR">
       </div>
-      <div class="col-md-5">
-        <label class="form-label">Alimento</label>
-        <select id="alimento-select" class="form-select" onchange="mostrarDatosAlimento()">
-          <option value="">Seleccioná un alimento</option>
-        </select>
+      <div class="form-group input-group">
+        <label>Contraseña</label>
+        <input type="password" class="form-control" id="password" placeholder="password">
+        <span class="ver-pass" onclick="togglePassword()">👁️</span>
       </div>
-      <div class="col-md-4">
-        <label class="form-label">Tiempo de comida</label>
-        <select id="tipo-comida" class="form-select">
-          <option value="desayuno">Desayuno</option>
-          <option value="media_manana">Media mañana</option>
-          <option value="almuerzo">Almuerzo</option>
-          <option value="merienda">Merienda</option>
-          <option value="cena">Cena</option>
-          <option value="colacion">Colación</option>
-        </select>
+      <button type="submit" class="btn-green">Inicia sesión</button>
+      <div class="text-center mt-3">
+        <small>¿Se te ha olvidado tu contraseña?</small>
       </div>
-      <div class="col-md-3">
-        <label class="form-label">Cantidad</label>
-        <input type="number" id="gramos" class="form-control" placeholder="Cantidad">
-      </div>
-      <div class="col-md-4 d-flex align-items-end">
-        <button onclick="agregarAlimento()" class="btn btn-primary w-100">
-          <i class="bi bi-plus-circle"></i> Agregar alimento
-        </button>
-      </div>
-      <div class="text-end">
-        <button id="toggle-detalle" class="btn btn-secondary mt-2">
-          <i class="bi bi-list-ul"></i> Mostrar detalles nutricionales
-        </button>
-      </div>
-    </div>
-    <div id="detalle-alimento" class="row g-2 mt-3"></div>
+    </form>
   </div>
 
-  <div class="text-end mt-3">
-    <button onclick="toggleTodosLosGrupos()" class="btn btn-outline-light btn-sm">
-      <i class="bi bi-arrows-expand"></i> Expandir/Colapsar todos
-    </button>
-  </div>
+  <!-- SCRIPTS -->
+<script src="js/index.js"></script>
 
-  <div id="listas-alimentos" class="mt-4">
-    <div class="grupo-comida">
-      <h3 class="titulo-grupo" onclick="toggleGrupo('desayuno')"><i class="bi bi-egg-fried"></i> Desayuno</h3>
-      <div id="lista-desayuno" class="tabla-comida d-none"></div>
-    </div>
-    <div class="grupo-comida">
-      <h3 class="titulo-grupo" onclick="toggleGrupo('media_manana')"><i class="bi bi-cup-straw"></i> Media mañana</h3>
-      <div id="lista-media_manana" class="tabla-comida d-none"></div>
-    </div>
-    <div class="grupo-comida">
-      <h3 class="titulo-grupo" onclick="toggleGrupo('almuerzo')"><i class="bi bi-plate"></i> Almuerzo</h3>
-      <div id="lista-almuerzo" class="tabla-comida d-none"></div>
-    </div>
-    <div class="grupo-comida">
-      <h3 class="titulo-grupo" onclick="toggleGrupo('merienda')"><i class="bi bi-cup"></i> Merienda</h3>
-      <div id="lista-merienda" class="tabla-comida d-none"></div>
-    </div>
-    <div class="grupo-comida">
-      <h3 class="titulo-grupo" onclick="toggleGrupo('cena')"><i class="bi bi-moon-stars"></i> Cena</h3>
-      <div id="lista-cena" class="tabla-comida d-none"></div>
-    </div>
-    <div class="grupo-comida">
-      <h3 class="titulo-grupo" onclick="toggleGrupo('colacion')"><i class="bi bi-cup-hot"></i> Colación</h3>
-      <div id="lista-colacion" class="tabla-comida d-none"></div>
-    </div>
-  </div>
-
-  <div id="totales" class="text-center fw-bold fs-5 mt-4"></div>
-
-  <canvas id="graficoCircular" width="300" height="300" class="mx-auto d-block mt-4"></canvas>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="a.js"></script>
 </body>
 </html>
