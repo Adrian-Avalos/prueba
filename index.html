@@ -10,26 +10,12 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#000000">
-
-  <!-- Manifest e íconos PWA -->
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="imagenes/icono.ico">
   <link rel="icon" type="image/png" href="imagenes/icono.png">
-
   <title>Nutrición-APP</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Service Worker -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(reg => console.log('SW registrado:', reg.scope))
-          .catch(err => console.error('SW error:', err));
-      });
-    }
-  </script>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
       margin: 0;
@@ -37,7 +23,6 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
       font-family: 'Helvetica Neue', sans-serif;
       overflow: hidden;
     }
-
     .slide {
       height: 100vh;
       width: 100vw;
@@ -51,23 +36,13 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
       position: absolute;
       transition: transform 0.5s ease-in-out;
     }
-
-    .slide h2 {
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    .slide p {
-      font-size: 16px;
-      margin-top: 10px;
-    }
-
+    .slide h2 { font-size: 28px; font-weight: bold; }
+    .slide p { font-size: 16px; margin-top: 10px; }
     .slide-buttons {
       margin-top: 25px;
       display: flex;
       justify-content: center;
     }
-
     .btn-slide {
       margin: 0 10px;
       padding: 12px 24px;
@@ -75,17 +50,14 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
       border-radius: 30px;
       border: none;
     }
-
     .slide1 { background-image: url('imagenes/slide6.jpeg'); z-index: 3; }
     .slide2 { background-image: url('imagenes/slide5.png'); z-index: 2; }
     .slide3 { background-image: url('imagenes/slide4.jpg'); z-index: 1; }
-
     .dots {
       display: flex;
       justify-content: center;
       margin-top: 15px;
     }
-
     .dot {
       width: 10px;
       height: 10px;
@@ -94,12 +66,9 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
       background-color: #ccc;
       transition: background-color 0.3s;
     }
+    .dot.active { background-color: #28a745; }
 
-    .dot.active {
-      background-color: #28a745;
-    }
-
-    /* LOGIN FULLSCREEN con animación */
+    /* LOGIN / REGISTRO */
     #modalLogin {
       position: fixed;
       inset: 0;
@@ -115,27 +84,22 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
       pointer-events: none;
       transition: opacity 0.4s ease;
     }
-
     #modalLogin.mostrar {
       opacity: 1;
       pointer-events: auto;
     }
-
     #modalLogin .form-control {
       background: rgba(255, 255, 255, 0.1);
       border: none;
       border-radius: 10px;
       color: #fff;
     }
-
     #modalLogin input::placeholder {
       color: rgba(255, 255, 255, 0.7);
     }
-
     #modalLogin h4 {
       margin-bottom: 30px;
     }
-
     .btn-green {
       background-color: #28a745;
       color: #fff;
@@ -145,7 +109,6 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
       border: none;
       width: 100%;
     }
-
     .cerrar {
       position: absolute;
       top: 20px;
@@ -154,7 +117,6 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
       cursor: pointer;
       color: #fff;
     }
-
     .ver-pass {
       position: absolute;
       right: 15px;
@@ -162,7 +124,6 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
       cursor: pointer;
       color: #ccc;
     }
-
     .input-group {
       position: relative;
     }
@@ -186,7 +147,6 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
         </div>
       </div>
     </div>
-
     <div class="slide slide2">
       <div>
         <h2>Vive de forma saludable</h2>
@@ -201,7 +161,6 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
         </div>
       </div>
     </div>
-
     <div class="slide slide3">
       <div>
         <h2>Tu nutrición, en tus manos</h2>
@@ -218,29 +177,101 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
     </div>
   </div>
 
-  <!-- LOGIN -->
+  <!-- LOGIN / REGISTRO -->
   <div id="modalLogin">
     <div class="cerrar" onclick="cerrarModal()">✕</div>
-    <h4>Inicia sesión</h4>
-    <form onsubmit="return validarLogin(event)" style="width: 100%; max-width: 350px;">
+    <h4 id="titulo-form">Inicia sesión</h4>
+    <form id="formularioAuth" style="width: 100%; max-width: 350px;" onsubmit="return manejarFormulario(event)">
       <div class="form-group">
         <label>Correo electrónico</label>
-        <input type="text" class="form-control" id="email" placeholder="ADMINISTRADOR" value="ADMINISTRADOR">
+        <input type="email" class="form-control" id="email" placeholder="tu@correo.com" required>
       </div>
       <div class="form-group input-group">
         <label>Contraseña</label>
-        <input type="password" class="form-control" id="password" placeholder="password">
+        <input type="password" class="form-control" id="password" placeholder="••••••••" required>
         <span class="ver-pass" onclick="togglePassword()">👁️</span>
       </div>
-      <button type="submit" class="btn-green">Inicia sesión</button>
+      <button type="submit" class="btn-green" id="btnSubmit">Inicia sesión</button>
       <div class="text-center mt-3">
-        <small>¿Se te ha olvidado tu contraseña?</small>
+        <small id="alternarTexto">
+          ¿No tienes cuenta? <a href="#" onclick="alternarModo()">Regístrate</a>
+        </small>
       </div>
     </form>
   </div>
 
-  <!-- SCRIPTS -->
-<script src="js/index.js"></script>
+  <!-- JS -->
+  <script>
+    // 🔗 Conexión a Supabase (REEMPLAZÁ ESTOS DATOS)
+    const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
+    const SUPABASE_ANON_KEY = 'TU_CLAVE_ANONIMA';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // Slider
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.style.transform = `translateX(${(i - index) * 100}%)`;
+        dots[i].classList.toggle('active', i === index);
+      });
+      currentSlide = index;
+    }
+    function autoSlide() {
+      currentSlide = (currentSlide + 1) % slides.length;
+      showSlide(currentSlide);
+    }
+    setInterval(autoSlide, 6000);
+    showSlide(0);
+
+    // Login/Register
+    let modoRegistro = false;
+
+    function irLogin() {
+      document.getElementById('modalLogin').classList.add('mostrar');
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalLogin').classList.remove('mostrar');
+    }
+
+    function togglePassword() {
+      const input = document.getElementById('password');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function alternarModo() {
+      modoRegistro = !modoRegistro;
+      document.getElementById('titulo-form').textContent = modoRegistro ? 'Regístrate' : 'Inicia sesión';
+      document.getElementById('btnSubmit').textContent = modoRegistro ? 'Registrarse' : 'Inicia sesión';
+      document.getElementById('alternarTexto').innerHTML = modoRegistro
+        ? '¿Ya tienes cuenta? <a href="#" onclick="alternarModo()">Inicia sesión</a>'
+        : '¿No tienes cuenta? <a href="#" onclick="alternarModo()">Regístrate</a>';
+    }
+
+    async function manejarFormulario(event) {
+      event.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (modoRegistro) {
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+          alert("Error al registrarse: " + error.message);
+        } else {
+          alert("Registro exitoso. Revisa tu correo para confirmar.");
+          alternarModo();
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          alert("Usuario o contraseña incorrectos");
+        } else {
+          location.href = "menu.html";
+        }
+      }
+    }
+  </script>
 </body>
 </html>
