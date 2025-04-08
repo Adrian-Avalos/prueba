@@ -1,3 +1,7 @@
+<!--
+© 2025 Ramón Adrian Avalos Verá (GitHub: Adrian-Avalos)
+Este código no puede ser copiado, modificado ni usado con fines comerciales sin permiso.
+-->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -22,91 +26,153 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('SW registrado:', reg.scope))
+          .catch(err => console.error('SW error:', err));
+      });
+    }
+  </script>
+
+  <!-- Estilos personalizados -->
   <style>
     body {
-      background-color: #000;
-      color: #fff;
+      background-color: #1a1a1a;
+      color: #f1f1f1;
       font-family: 'Inter', sans-serif;
       padding-bottom: 3rem;
+      font-size: 16px;
     }
+
     h1 {
       font-weight: 700;
       letter-spacing: -1px;
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
     }
+
     label {
-      margin-top: .5rem;
+      margin-top: 0.5rem;
+      font-weight: 600;
+      color: #ccc;
     }
+
+    input, select {
+      background-color: #2b2b2b;
+      border: 1px solid #444;
+      color: #fff;
+    }
+
+    input::placeholder {
+      color: #aaa;
+    }
+
+    button {
+      border-radius: 0.7rem;
+      padding: 0.6rem 1rem;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
     .circle {
       border-radius: 50%;
-      width: 100px;
-      height: 100px;
-      border: 5px solid #444;
+      width: 90px;
+      height: 90px;
+      border: 4px solid #444;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: auto;
       margin-bottom: 1rem;
       font-weight: bold;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
     }
-    .carbs { border-color: #ffc107; color: #ffc107; }
-    .protein { border-color: #198754; color: #198754; }
-    .fat { border-color: #dc3545; color: #dc3545; }
-    .table thead { background-color: #222; color: #fff; }
-    .table tbody td { background-color: #333; color: #fff; }
+
+    .circle:hover {
+      transform: scale(1.05);
+    }
+
+    .carbs { border-color: #fcd34d; color: #fcd34d; }
+    .protein { border-color: #4ade80; color: #4ade80; }
+    .fat { border-color: #f87171; color: #f87171; }
+
+    .table thead {
+      background-color: #2c2c2c;
+      color: #f1f1f1;
+    }
+
+    .table tbody td {
+      background-color: #202020;
+      color: #e2e2e2;
+    }
+
     .form-section {
-      background: #111;
+      background: #292929;
       padding: 1rem;
       border-radius: 1rem;
       margin-top: 2rem;
-      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
     }
+
     #detalle-alimento {
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.5s ease;
     }
+
     #detalle-alimento.activo {
       max-height: 1000px;
       transition: max-height 0.8s ease;
     }
+
     .titulo-grupo {
-      background: #222;
-      padding: 0.7rem 1rem;
+      background: #2a2a2a;
+      padding: 0.8rem 1rem;
       margin-top: 1rem;
       cursor: pointer;
-      border-radius: 0.5rem;
+      border-radius: 0.6rem;
       font-size: 1.1rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.6rem;
+      transition: background 0.3s ease;
     }
+
+    .titulo-grupo:hover {
+      background: #333;
+    }
+
     .tabla-comida {
       padding: 0.5rem;
       margin-bottom: 1rem;
     }
+
     .d-none {
       display: none;
     }
+
     button i {
       margin-right: 0.4rem;
     }
 
-    /* ✅ Widget flotante */
-    #widgetTotales {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(33, 37, 41, 0.95);
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: bold;
-      box-shadow: 0 0 8px rgba(0,0,0,0.3);
-      cursor: move;
-      z-index: 9999;
-      user-select: none;
+    .table td:nth-child(2), .table th:nth-child(2) {
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .table td:nth-child(2):hover {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+      background-color: #222;
+      z-index: 10;
+      position: relative;
     }
   </style>
 </head>
@@ -212,18 +278,7 @@
   <canvas id="graficoCircular" width="300" height="300" class="mx-auto d-block mt-4"></canvas>
 </div>
 
-<!-- ✅ Widget flotante -->
-<div id="widgetTotales">
-  <strong>HC:</strong> <span id="totalHC">0g</span> |
-  <strong>Prot:</strong> <span id="totalProt">0g</span> |
-  <strong>Grasas:</strong> <span id="totalGrasas">0g</span>
-</div>
-
-<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="a.js"></script>
-
-<!-- ✅ Script del widget flotante -->
-
+<script src="js/Calculadora-Ncompl.js"></script>
 </body>
 </html>
