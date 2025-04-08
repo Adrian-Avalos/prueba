@@ -30,15 +30,16 @@
 
     // Cámara
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.z = 4;
+    camera.position.set(0, 1, 4); // Ajusta la cámara para no estar en el mismo lugar que el objeto
 
     // Renderizador
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio); // Ajusta la resolución
     document.body.appendChild(renderer.domElement);
 
     // Luz
-    const light = new THREE.PointLight(0xffffff, 1.2);
+    const light = new THREE.PointLight(0xffffff, 1.2, 100);
     light.position.set(5, 5, 5);
     scene.add(light);
 
@@ -83,7 +84,7 @@
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
     // GUI
-    const gui = new dat.GUI({ container: document.getElementById('gui') });
+    const gui = new lil.GUI({ container: document.getElementById('gui') });
     const settings = {
       color: '#00ffff',
       opacity: 0.8,
