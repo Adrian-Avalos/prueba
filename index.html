@@ -16,8 +16,8 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
   <title>Nutrición-APP</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
 
-  <!-- Supabase CDN (versión 2.x UMD) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.min.js"></script>
+  <!-- Supabase v1.x (funciona como en tu ejemplo original) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <style>
     body {
@@ -215,9 +215,9 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
     </form>
   </div>
 
-  <!-- LOGIN SCRIPT -->
+  <!-- SCRIPT DE LOGIN CON SUPABASE v1.x -->
   <script>
-    const supa = Supabase.createClient(
+    const supabaseClient = supabase.createClient(
       'https://djbuwtemavldytssbicb.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqYnV3dGVtYXZsZHl0c3NiaWNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2ODIxOTMsImV4cCI6MjA1OTI1ODE5M30.VBwS5W5qEFaBVeXXITpGLZa5JSvXkZuaEIiYd33-oy4'
     );
@@ -240,7 +240,7 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
 
-      const { data, error } = await supa.auth.signInWithPassword({
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
         password
       });
@@ -255,4 +255,3 @@ Este código no puede ser copiado, modificado ni usado con fines comerciales sin
   </script>
 </body>
 </html>
-
