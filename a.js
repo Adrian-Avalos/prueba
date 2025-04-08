@@ -95,6 +95,9 @@ let graficoMacros = null;
         const th = document.createElement('th');
         th.textContent = col.replace(/_/g, ' ').toUpperCase();
         headerRow.appendChild(th);
+
+      actualizarWidgetTotales(totalHC, totalProteinas, totalGrasas);
+
       });
 
       const cuerpo = document.getElementById(`body-${tipo}`);
