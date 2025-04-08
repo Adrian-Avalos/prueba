@@ -34,7 +34,10 @@ let graficoMacros = null;
       const select = document.getElementById('alimento-select');
       select.innerHTML = '<option value="">Seleccioná un alimento</option>';
 
-      let query = client.from('alimentos_detallados').select('id, alimento').order('alimento', { ascending: true });
+       let query = client
+        .from('alimentos_detallados')
+        .select('id, alimento, valor_energetico, carbohidratos_disponibles, proteinas, lipidos_totales')
+        .order('alimento', { ascending: true });
       if (buscar) query = query.ilike('alimento', `%${buscar}%`);
 
       const { data, error } = await query;
