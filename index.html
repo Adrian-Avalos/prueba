@@ -1,109 +1,83 @@
-<!--
-© 2025 Ramón Adrian Avalos Verá (GitHub: Adrian-Avalos)
-Este código no puede ser copiado, modificado ni usado con fines comerciales sin permiso.
--->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | Nutrición-APP</title>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Iniciar sesión</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      background-color: #f8f9fa;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      background: #f0f0f0;
+      font-family: sans-serif;
     }
-    .login-container {
-      background-color: #343a40;
-      padding: 40px;
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    form {
+      background: #343a40;
       color: #fff;
-      width: 100%;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
       max-width: 400px;
-    }
-    .form-control {
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
-      color: #fff;
-    }
-    .form-control::placeholder {
-      color: rgba(255, 255, 255, 0.6);
-    }
-    .btn-green {
-      background-color: #28a745;
-      color: #fff;
-      border: none;
-      font-weight: bold;
       width: 100%;
-      border-radius: 30px;
+    }
+    input {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      width: 100%;
+      background: #28a745;
+      border: none;
       padding: 12px;
-      margin-top: 20px;
-    }
-    .ver-pass {
-      position: absolute;
-      right: 15px;
-      top: 9px;
+      font-weight: bold;
+      color: white;
+      border-radius: 5px;
       cursor: pointer;
-      color: #ccc;
-    }
-    .input-group {
-      position: relative;
     }
   </style>
 </head>
 <body>
 
-  <div class="login-container">
-    <h3 class="text-center mb-4">Inicia sesión</h3>
-    <form onsubmit="return iniciarSesion(event)">
-      <div class="form-group">
-        <label>Correo electrónico</label>
-        <input type="email" class="form-control" id="email" placeholder="tucorreo@example.com" required>
-      </div>
-      <div class="form-group input-group">
-        <label>Contraseña</label>
-        <input type="password" class="form-control" id="password" placeholder="••••••••" required>
-        <span class="ver-pass" onclick="togglePassword()">👁️</span>
-      </div>
-      <button type="submit" class="btn-green">Entrar</button>
-    </form>
-  </div>
+  <form id="loginForm">
+    <h3>Iniciar sesión</h3>
+    <input type="email" id="email" placeholder="Correo electrónico" required />
+    <input type="password" id="password" placeholder="Contraseña" required />
+    <button type="submit">Entrar</button>
+  </form>
 
   <script>
-    // 🔗 Conexión a Supabase (REEMPLAZÁ ESTOS DATOS)
-    const SUPABASE_URL = 'https://djbuwtemavldytssbicb.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqYnV3dGVtYXZsZHl0c3NiaWNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2ODIxOTMsImV4cCI6MjA1OTI1ODE5M30.VBwS5W5qEFaBVeXXITpGLZa5JSvXkZuaEIiYd33-oy4';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.addEventListener('DOMContentLoaded', async () => {
+      const client = supabase.createClient(
+        'https://djbuwtemavldytssbicb.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqYnV3dGVtYXZsZHl0c3NiaWNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2ODIxOTMsImV4cCI6MjA1OTI1ODE5M30.VBwS5W5qEFaBVeXXITpGLZa5JSvXkZuaEIiYd33-oy4'
+      );
 
-    function togglePassword() {
-      const input = document.getElementById('password');
-      input.type = input.type === 'password' ? 'text' : 'password';
-    }
+      const form = document.getElementById('loginForm');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    async function iniciarSesion(event) {
-      event.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await client.auth.signInWithPassword({
+          email,
+          password
+        });
 
-      if (error) {
-        alert("Correo o contraseña incorrectos");
-        console.error(error);
-      } else {
-        // Redirige a tu menú principal (ajustá la URL si hace falta)
-        window.location.href = "menu.html";
-      }
-    }
+        if (error) {
+          alert("Correo o contraseña incorrectos");
+          console.error(error);
+        } else {
+          window.location.href = "menu.html"; // O tu dashboard
+        }
+      });
+    });
   </script>
 
 </body>
