@@ -1,6 +1,6 @@
 // js/Calculadora-Ncompl.js
 
-// Exponer la variable de selección de alimentos como global
+// — Exponer la variable de selección de alimentos como global —
 window.alimentosSeleccionados = {
   desayuno: [],
   media_manana: [],
@@ -265,11 +265,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('calorias-restantes').innerHTML   = `Todavía puedes comer <strong>${(macrosObjetivo.calorias - t.calorias).toFixed(0)}</strong> calorías`;
   }
 
+  // — Exponer actualizarTabla globalmente para el menú flotante —
+  window.actualizarTabla = actualizarTabla;
+
   // Ejecuta la primera carga de alimentos
   cargarAlimentos();
 });
 
-// Funciones globales de interacción con los grupos
+// — Funciones globales de interacción con los grupos fuera del DOMContentLoaded —
 function toggleGrupo(tipo) {
   document.getElementById(`lista-${tipo}`).classList.toggle('d-none');
 }
@@ -280,7 +283,7 @@ function toggleTodosLosGrupos() {
   );
 }
 
-// ——— Menú flotante ———
+// — Menú flotante — 
 
 function toggleMenu() {
   const menu = document.getElementById("menu-flotante");
@@ -303,7 +306,10 @@ function cargarDietaPrompt() {
     return;
   }
   window.alimentosSeleccionados = JSON.parse(data);
-  Object.keys(window.alimentosSeleccionados).forEach(tipo => actualizarTabla(tipo));
+  // Actualizar cada tabla ya expuesta globalmente
+  Object.keys(window.alimentosSeleccionados).forEach(tipo => {
+    window.actualizarTabla(tipo);
+  });
   alert("Dieta cargada.");
 }
 
