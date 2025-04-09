@@ -267,3 +267,49 @@ async function cargarAlimentos() {
       document.getElementById(`lista-${grupo}`).classList.toggle('d-none')
     );
   }
+  function toggleMenu() {
+  const menu = document.getElementById("menu-flotante");
+  menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+}
+
+function guardarDietaPrompt() {
+  const nombre = prompt("¿Nombre de la dieta?");
+  if (nombre) {
+    localStorage.setItem(nombre, JSON.stringify(alimentosSeleccionados));
+    alert("Dieta guardada.");
+  }
+}
+
+function cargarDietaPrompt() {
+  const nombre = prompt("¿Nombre de la dieta a cargar?");
+  const data = localStorage.getItem(nombre);
+  if (!data) {
+    alert("No se encontró esa dieta.");
+    return;
+  }
+  alimentosSeleccionados = JSON.parse(data);
+  for (const tipo in alimentosSeleccionados) {
+    actualizarTabla(tipo);
+  }
+  alert("Dieta cargada.");
+}
+
+function verDietas() {
+  const claves = Object.keys(localStorage);
+  if (claves.length === 0) {
+    alert("No hay dietas guardadas.");
+    return;
+  }
+  alert("Dietas guardadas:\n" + claves.join("\n"));
+}
+
+function eliminarDietaPrompt() {
+  const nombre = prompt("¿Nombre de la dieta a eliminar?");
+  if (!nombre) return;
+  if (localStorage.getItem(nombre)) {
+    localStorage.removeItem(nombre);
+    alert(`Dieta "${nombre}" eliminada.`);
+  } else {
+    alert("No se encontró esa dieta.");
+  }
+}
