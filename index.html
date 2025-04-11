@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Ubicación + Chat Tiempo Real</title>
+  <meta charset="UTF-8" />
+  <title>Ubicación + Chat + Ruta</title>
   <style>
     body { font-family: Arial; background: #f8f8f8; padding: 20px; }
     input, button { padding: 8px; margin: 5px; }
@@ -17,7 +17,7 @@
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
-  <h2>🗺️ Amigos en Tiempo Real + Chat</h2>
+  <h2>🗺️ Amigos en Tiempo Real + Chat + Ruta</h2>
 
   <div id="registerBox">
     <p><strong>Correo:</strong></p>
@@ -56,6 +56,8 @@
     let connections = {};
     let markers = {};
     let friendData = JSON.parse(localStorage.getItem('friends')) || [];
+    let friendRoutes = {}; // 🧭 historial de coordenadas
+    let polylines = {};   // 🟪 líneas dibujadas en el mapa
 
     function register() {
       const email = document.getElementById('email').value;
@@ -72,7 +74,6 @@
       document.getElementById('userEmail').textContent = email;
       document.getElementById('userId').textContent = id;
 
-      // Botón WhatsApp
       document.getElementById('whatsappShare').href =
         `https://wa.me/?text=Agregame en la app de ubicación! Mi ID es: ${id}`;
 
@@ -80,7 +81,6 @@
 
       peer.on('open', () => {
         renderFriendList();
-        // ✅ Reconectar con amigos guardados
         friendData.forEach(f => {
           connectToFriend(f.id, f.name);
         });
@@ -140,11 +140,14 @@
       if (connections[id]) return;
       const c = peer.connect(id);
       connections[id] = c;
+      friendRoutes[id] = [];
 
       c.on('open', () => {
         c.on('data', data => {
           if (data.type === 'location') {
             const coords = data.coords;
+            friendRoutes[id].push([coords.lat, coords.lng]);
+
             if (!markers[id]) {
               const color = colors[colorIndex++ % colors.length];
               const marker = L.circleMarker([coords.lat, coords.lng], {
@@ -154,6 +157,16 @@
               markers[id] = marker;
             } else {
               markers[id].setLatLng([coords.lat, coords.lng]);
+            }
+
+            if (polylines[id]) {
+              polylines[id].setLatLngs(friendRoutes[id]);
+            } else {
+              polylines[id] = L.polyline(friendRoutes[id], {
+                color: 'gray',
+                weight: 3,
+                opacity: 0.7
+              }).addTo(map);
             }
           } else if (data.type === 'chat') {
             appendChatMsg(id, "💬 " + data.msg);
@@ -223,6 +236,11 @@
         map.removeLayer(markers[id]);
         delete markers[id];
       }
+      if (polylines[id]) {
+        map.removeLayer(polylines[id]);
+        delete polylines[id];
+      }
+      delete friendRoutes[id];
       if (connections[id]) {
         connections[id].close();
         delete connections[id];
