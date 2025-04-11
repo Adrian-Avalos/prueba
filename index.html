@@ -17,12 +17,14 @@
 <body>
   <h2>🗺️ Amigos en Tiempo Real</h2>
 
+  <!-- Registro -->
   <div id="registerBox">
     <p><strong>Correo:</strong></p>
     <input type="email" id="email" placeholder="tu@correo.com">
     <button onclick="register()">Crear cuenta</button>
   </div>
 
+  <!-- App principal -->
   <div id="app" class="hidden">
     <p><strong>Tu correo:</strong> <span id="userEmail"></span></p>
     <p><strong>Tu ID:</strong> <span id="userId">---</span></p>
@@ -68,23 +70,38 @@
       document.getElementById('userId').textContent = id;
 
       peer = new Peer(id);
+
+      peer.on('open', id => {
+        document.getElementById('userId').textContent = id;
+        // Reconecta con todos los amigos guardados
+        friendData.forEach(f => connectToFriend(f.id, f.name));
+        renderFriendList();
+      });
+
+      // Escucha a quienes se conectan a vos
       peer.on('connection', c => {
         c.on('open', () => {
           navigator.geolocation.watchPosition(pos => {
-            const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            const coords = {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude
+            };
             c.send(coords);
+
             if (!myMarker) {
-              myMarker = L.marker([coords.lat, coords.lng]).addTo(map).bindPopup("Mi ubicación").openPopup();
+              myMarker = L.marker([coords.lat, coords.lng]).addTo(map)
+                .bindPopup("Mi ubicación").openPopup();
               map.setView([coords.lat, coords.lng], 15);
             } else {
               myMarker.setLatLng([coords.lat, coords.lng]);
             }
-          }, err => alert("No se pudo obtener ubicación"), { enableHighAccuracy: true });
+          }, err => alert("No se pudo obtener ubicación: " + err.message), {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 10000
+          });
         });
       });
-
-      friendData.forEach(f => connectToFriend(f.id, f.name));
-      renderFriendList();
     }
 
     function startSharing() {
