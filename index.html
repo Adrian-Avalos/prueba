@@ -1,46 +1,49 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Amigos en Tiempo Real</title>
+  <meta charset="UTF-8" />
+  <title>Amigos en Tiempo Real + Chat</title>
   <style>
     body { font-family: Arial; background: #f8f8f8; padding: 20px; }
     input, button { padding: 8px; margin: 5px; }
     .hidden { display: none; }
     #map { height: 400px; margin-top: 20px; }
-    .friend { margin-bottom: 5px; background: #fff; padding: 5px; border-radius: 5px; }
+    .friend { margin-bottom: 10px; background: #fff; padding: 10px; border-radius: 6px; }
+    .chat-box { background: #eee; padding: 5px; margin-top: 5px; border-radius: 5px; max-height: 150px; overflow-y: auto; }
+    .chat-msg { margin: 2px 0; font-size: 14px; }
   </style>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
-  <h2>🗺️ Amigos en Tiempo Real</h2>
+  <h2>🗺️ Amigos en Tiempo Real + Chat</h2>
 
-  <!-- Registro -->
   <div id="registerBox">
     <p><strong>Correo:</strong></p>
-    <input type="email" id="email" placeholder="tu@correo.com">
+    <input type="email" id="email" placeholder="tu@correo.com" />
     <button onclick="register()">Crear cuenta</button>
   </div>
 
-  <!-- App principal -->
   <div id="app" class="hidden">
     <p><strong>Tu correo:</strong> <span id="userEmail"></span></p>
     <p><strong>Tu ID:</strong> <span id="userId">---</span></p>
-    <button onclick="startSharing()">📡 Compartir mi ubicación</button>
+    <button onclick="startSharing()">📡 Compartir ubicación</button>
+    <a id="whatsappShare" target="_blank">📤 Compartir por WhatsApp</a>
 
-    <hr>
+    <hr />
 
     <h3>👀 Ver a un amigo</h3>
-    <input type="text" id="friendId" placeholder="ID del amigo">
-    <input type="text" id="friendName" placeholder="Nombre del amigo">
+    <input type="text" id="friendId" placeholder="ID del amigo" />
+    <input type="text" id="friendName" placeholder="Nombre del amigo" />
     <button onclick="addFriend()">Agregar amigo</button>
 
     <div id="friendList"></div>
   </div>
 
   <div id="map"></div>
+
+  <audio id="beep" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
   <script>
     const colors = ['red', 'blue', 'green', 'purple', 'orange', 'brown'];
@@ -69,24 +72,32 @@
       document.getElementById('userEmail').textContent = email;
       document.getElementById('userId').textContent = id;
 
+      // Botón WhatsApp
+      document.getElementById('whatsappShare').href =
+        `https://wa.me/?text=Agregame en la app de ubicación! Mi ID es: ${id}`;
+
       peer = new Peer(id);
 
-      peer.on('open', id => {
-        document.getElementById('userId').textContent = id;
-        // Reconecta con todos los amigos guardados
+      peer.on('open', () => {
         friendData.forEach(f => connectToFriend(f.id, f.name));
         renderFriendList();
       });
 
-      // Escucha a quienes se conectan a vos
       peer.on('connection', c => {
         c.on('open', () => {
+          document.getElementById('beep').play();
+          c.on('data', data => {
+            if (data.type === 'chat') {
+              appendChatMsg(c.peer, "👤 " + data.msg);
+            }
+          });
+
           navigator.geolocation.watchPosition(pos => {
             const coords = {
               lat: pos.coords.latitude,
               lng: pos.coords.longitude
             };
-            c.send(coords);
+            c.send({ type: 'location', coords });
 
             if (!myMarker) {
               myMarker = L.marker([coords.lat, coords.lng]).addTo(map)
@@ -95,7 +106,7 @@
             } else {
               myMarker.setLatLng([coords.lat, coords.lng]);
             }
-          }, err => alert("No se pudo obtener ubicación: " + err.message), {
+          }, err => alert("No se pudo obtener ubicación"), {
             enableHighAccuracy: true,
             maximumAge: 0,
             timeout: 10000
@@ -105,15 +116,14 @@
     }
 
     function startSharing() {
-      alert("Esperando que tus amigos se conecten...");
+      alert("Esperando conexiones...");
     }
 
     function addFriend() {
       const id = document.getElementById('friendId').value.trim();
       const name = document.getElementById('friendName').value.trim() || id;
       if (!id) return alert("Ingresá un ID válido");
-
-      if (friendData.find(f => f.id === id)) return alert("Ese amigo ya está agregado");
+      if (friendData.find(f => f.id === id)) return alert("Ya está agregado");
 
       friendData.push({ id, name });
       localStorage.setItem('friends', JSON.stringify(friendData));
@@ -125,34 +135,65 @@
 
     function connectToFriend(id, name) {
       const c = peer.connect(id);
-      c.on('data', coords => {
-        if (!markers[id]) {
-          const color = colors[colorIndex++ % colors.length];
-          const marker = L.circleMarker([coords.lat, coords.lng], {
-            color,
-            radius: 10
-          }).addTo(map).bindPopup(name).openPopup();
-          markers[id] = marker;
-        } else {
-          markers[id].setLatLng([coords.lat, coords.lng]);
-        }
-      });
       connections[id] = c;
+
+      c.on('open', () => {
+        c.on('data', data => {
+          if (data.type === 'location') {
+            const coords = data.coords;
+            if (!markers[id]) {
+              const color = colors[colorIndex++ % colors.length];
+              const marker = L.circleMarker([coords.lat, coords.lng], {
+                color,
+                radius: 10
+              }).addTo(map).bindPopup(name).openPopup();
+              markers[id] = marker;
+            } else {
+              markers[id].setLatLng([coords.lat, coords.lng]);
+            }
+          } else if (data.type === 'chat') {
+            appendChatMsg(id, "💬 " + data.msg);
+          }
+        });
+      });
     }
 
     function renderFriendList() {
       const container = document.getElementById('friendList');
       container.innerHTML = '';
-      friendData.forEach((f, i) => {
+      friendData.forEach(f => {
         const div = document.createElement('div');
         div.className = 'friend';
         div.innerHTML = `
           <input value="${f.name}" onchange="editName('${f.id}', this.value)">
           <button onclick="centerOn('${f.id}')">📍</button>
-          <button onclick="removeFriend('${f.id}')">❌</button>
+          <button onclick="removeFriend('${f.id}')">❌</button><br>
+          <input id="chat-${f.id}" placeholder="Mensaje">
+          <button onclick="sendChat('${f.id}')">💬</button>
+          <div id="chatbox-${f.id}" class="chat-box"></div>
         `;
         container.appendChild(div);
       });
+    }
+
+    function appendChatMsg(id, msg) {
+      const box = document.getElementById('chatbox-' + id);
+      if (box) {
+        const p = document.createElement('div');
+        p.className = 'chat-msg';
+        p.textContent = msg;
+        box.appendChild(p);
+        box.scrollTop = box.scrollHeight;
+      }
+    }
+
+    function sendChat(id) {
+      const input = document.getElementById('chat-' + id);
+      const msg = input.value.trim();
+      if (!msg || !connections[id]) return;
+      connections[id].send({ type: 'chat', msg });
+      appendChatMsg(id, "🧑‍💻 " + msg);
+      input.value = '';
     }
 
     function editName(id, newName) {
@@ -185,7 +226,6 @@
       renderFriendList();
     }
 
-    // Auto-login
     const correo = localStorage.getItem('correo');
     const peerId = localStorage.getItem('peerId');
     if (correo && peerId) initApp(correo, peerId);
