@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Amigos en Tiempo Real + Chat</title>
+  <meta charset="UTF-8">
+  <title>Ubicación + Chat Tiempo Real</title>
   <style>
     body { font-family: Arial; background: #f8f8f8; padding: 20px; }
     input, button { padding: 8px; margin: 5px; }
@@ -79,8 +79,11 @@
       peer = new Peer(id);
 
       peer.on('open', () => {
-        friendData.forEach(f => connectToFriend(f.id, f.name));
         renderFriendList();
+        // ✅ Reconectar con amigos guardados
+        friendData.forEach(f => {
+          connectToFriend(f.id, f.name);
+        });
       });
 
       peer.on('connection', c => {
@@ -134,6 +137,7 @@
     }
 
     function connectToFriend(id, name) {
+      if (connections[id]) return;
       const c = peer.connect(id);
       connections[id] = c;
 
