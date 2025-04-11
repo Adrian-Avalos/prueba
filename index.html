@@ -2,143 +2,176 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Ubicación entre Amigos</title>
+  <title>Amigos en Tiempo Real</title>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f0f0f0; }
-    #map { height: 400px; margin-top: 20px; display: none; }
-    .box { margin-bottom: 20px; }
-    input, button { padding: 8px; font-size: 14px; margin-top: 5px; }
+    body { font-family: Arial; background: #f8f8f8; padding: 20px; }
+    input, button { padding: 8px; margin: 5px; }
     .hidden { display: none; }
+    #map { height: 400px; margin-top: 20px; }
+    .friend { margin-bottom: 5px; background: #fff; padding: 5px; border-radius: 5px; }
   </style>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
-  <h2>🗺️ Ubicación en Tiempo Real</h2>
+  <h2>🗺️ Amigos en Tiempo Real</h2>
 
-  <!-- PASO 1: ELECCIÓN -->
-  <div id="step1">
-    <button onclick="goTo('register')">Crear cuenta</button>
-    <button onclick="goTo('view')">Ver a un amigo</button>
+  <div id="registerBox">
+    <p><strong>Correo:</strong></p>
+    <input type="email" id="email" placeholder="tu@correo.com">
+    <button onclick="register()">Crear cuenta</button>
   </div>
 
-  <!-- PASO 2: REGISTRO -->
-  <div id="registerBox" class="hidden">
-    <h3>📧 Ingresá tu correo</h3>
-    <input type="email" id="emailInput" placeholder="tucorreo@email.com" />
-    <br>
-    <button onclick="register()">Registrar</button>
-  </div>
-
-  <!-- PASO 3: APP PRINCIPAL -->
-  <div id="mainApp" class="hidden">
-    <p><strong>Tu correo:</strong> <span id="correo"></span></p>
-    <p><strong>Tu ID:</strong> <span id="myId">---</span></p>
+  <div id="app" class="hidden">
+    <p><strong>Tu correo:</strong> <span id="userEmail"></span></p>
+    <p><strong>Tu ID:</strong> <span id="userId">---</span></p>
     <button onclick="startSharing()">📡 Compartir mi ubicación</button>
-    <br><br>
+
+    <hr>
+
+    <h3>👀 Ver a un amigo</h3>
     <input type="text" id="friendId" placeholder="ID del amigo">
-    <button onclick="viewFriend()">👀 Ver ubicación de amigo</button>
+    <input type="text" id="friendName" placeholder="Nombre del amigo">
+    <button onclick="addFriend()">Agregar amigo</button>
+
+    <div id="friendList"></div>
   </div>
 
   <div id="map"></div>
 
   <script>
-    let peer;
-    let conn;
-    let myMarker;
-    let friendMarkers = {};
+    const colors = ['red', 'blue', 'green', 'purple', 'orange', 'brown'];
+    let colorIndex = 0;
     let map = L.map('map').setView([0, 0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    function goTo(step) {
-      document.getElementById('step1').classList.add('hidden');
-      if (step === 'register') document.getElementById('registerBox').classList.remove('hidden');
-      if (step === 'view') initApp();
-    }
-
-    function generateId() {
-      return 'id-' + Math.random().toString(36).substring(2, 10);
-    }
+    let peer, conn;
+    let myMarker;
+    let connections = {};
+    let markers = {};
+    let friendData = JSON.parse(localStorage.getItem('friends')) || [];
 
     function register() {
-      const email = document.getElementById('emailInput').value;
-      if (!email) return alert("Ingresá un correo válido");
-      const id = generateId();
+      const email = document.getElementById('email').value;
+      if (!email) return alert("Ingresá tu correo");
+      const id = localStorage.getItem('peerId') || ('id-' + Math.random().toString(36).substring(2, 10));
       localStorage.setItem('correo', email);
       localStorage.setItem('peerId', id);
-      initApp();
+      initApp(email, id);
     }
 
-    function initApp() {
-      const correo = localStorage.getItem('correo');
-      const savedId = localStorage.getItem('peerId');
-
-      if (!correo || !savedId) {
-        goTo('register');
-        return;
-      }
-
-      document.getElementById('correo').textContent = correo;
+    function initApp(email, id) {
       document.getElementById('registerBox').classList.add('hidden');
-      document.getElementById('mainApp').classList.remove('hidden');
-      document.getElementById('map').style.display = 'block';
+      document.getElementById('app').classList.remove('hidden');
+      document.getElementById('userEmail').textContent = email;
+      document.getElementById('userId').textContent = id;
 
-      peer = new Peer(savedId);
-
-      peer.on('open', id => {
-        document.getElementById('myId').textContent = id;
-      });
-
+      peer = new Peer(id);
       peer.on('connection', c => {
         c.on('open', () => {
           navigator.geolocation.watchPosition(pos => {
-            const coords = {
-              lat: pos.coords.latitude,
-              lng: pos.coords.longitude
-            };
+            const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
             c.send(coords);
-
             if (!myMarker) {
               myMarker = L.marker([coords.lat, coords.lng]).addTo(map).bindPopup("Mi ubicación").openPopup();
               map.setView([coords.lat, coords.lng], 15);
             } else {
               myMarker.setLatLng([coords.lat, coords.lng]);
             }
-          }, err => {
-            alert("No se pudo acceder a la ubicación.");
-          }, { enableHighAccuracy: true });
+          }, err => alert("No se pudo obtener ubicación"), { enableHighAccuracy: true });
         });
       });
+
+      friendData.forEach(f => connectToFriend(f.id, f.name));
+      renderFriendList();
     }
 
     function startSharing() {
-      alert("Esperando a que tu amigo se conecte...");
+      alert("Esperando que tus amigos se conecten...");
     }
 
-    function viewFriend() {
-      const friendId = document.getElementById('friendId').value;
-      if (!friendId) return alert("Ingresá un ID válido");
-      const connection = peer.connect(friendId);
-      connection.on('open', () => {
-        alert("Conectado con tu amigo");
-      });
-      connection.on('data', data => {
-        if (!friendMarkers[friendId]) {
-          friendMarkers[friendId] = L.marker([data.lat, data.lng]).addTo(map)
-            .bindPopup("Amigo: " + friendId).openPopup();
-          map.setView([data.lat, data.lng], 15);
+    function addFriend() {
+      const id = document.getElementById('friendId').value.trim();
+      const name = document.getElementById('friendName').value.trim() || id;
+      if (!id) return alert("Ingresá un ID válido");
+
+      if (friendData.find(f => f.id === id)) return alert("Ese amigo ya está agregado");
+
+      friendData.push({ id, name });
+      localStorage.setItem('friends', JSON.stringify(friendData));
+      connectToFriend(id, name);
+      renderFriendList();
+      document.getElementById('friendId').value = '';
+      document.getElementById('friendName').value = '';
+    }
+
+    function connectToFriend(id, name) {
+      const c = peer.connect(id);
+      c.on('data', coords => {
+        if (!markers[id]) {
+          const color = colors[colorIndex++ % colors.length];
+          const marker = L.circleMarker([coords.lat, coords.lng], {
+            color,
+            radius: 10
+          }).addTo(map).bindPopup(name).openPopup();
+          markers[id] = marker;
         } else {
-          friendMarkers[friendId].setLatLng([data.lat, data.lng]);
+          markers[id].setLatLng([coords.lat, coords.lng]);
         }
       });
+      connections[id] = c;
     }
 
-    // Auto login si ya tiene ID y correo
-    if (localStorage.getItem('correo') && localStorage.getItem('peerId')) {
-      initApp();
-      document.getElementById('step1').classList.add('hidden');
+    function renderFriendList() {
+      const container = document.getElementById('friendList');
+      container.innerHTML = '';
+      friendData.forEach((f, i) => {
+        const div = document.createElement('div');
+        div.className = 'friend';
+        div.innerHTML = `
+          <input value="${f.name}" onchange="editName('${f.id}', this.value)">
+          <button onclick="centerOn('${f.id}')">📍</button>
+          <button onclick="removeFriend('${f.id}')">❌</button>
+        `;
+        container.appendChild(div);
+      });
     }
+
+    function editName(id, newName) {
+      const friend = friendData.find(f => f.id === id);
+      if (friend) {
+        friend.name = newName;
+        localStorage.setItem('friends', JSON.stringify(friendData));
+        if (markers[id]) markers[id].bindPopup(newName);
+      }
+    }
+
+    function centerOn(id) {
+      if (markers[id]) {
+        map.setView(markers[id].getLatLng(), 15);
+        markers[id].openPopup();
+      }
+    }
+
+    function removeFriend(id) {
+      friendData = friendData.filter(f => f.id !== id);
+      localStorage.setItem('friends', JSON.stringify(friendData));
+      if (markers[id]) {
+        map.removeLayer(markers[id]);
+        delete markers[id];
+      }
+      if (connections[id]) {
+        connections[id].close();
+        delete connections[id];
+      }
+      renderFriendList();
+    }
+
+    // Auto-login
+    const correo = localStorage.getItem('correo');
+    const peerId = localStorage.getItem('peerId');
+    if (correo && peerId) initApp(correo, peerId);
   </script>
 </body>
 </html>
